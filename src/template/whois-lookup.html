@@ -1,0 +1,191 @@
+%%HEADER%%
+        <div class="my-5 pt-5 px-4">
+            <h1 class="display-4 fw-bold text-body-emphasis text-center swanky-and-moo-moo-regular">WHOIS Lookup</h1>
+        </div>
+
+        <div class="col-lg-8 col-md-10 col-sm-12 offset-lg-2 offset-md-1 offset-sm-0 pb-4">
+            <form id="queryForm" method="POST" action="/whois-lookup" onsubmit="return window.whoisQuery(this)">
+                <fieldset>
+                    <div class="input-group mb-3">
+                        <input type="text" id="domainField" name="domain" class="form-control form-control-lg" placeholder="Eg: example.com.mp" value="%%DOMAIN%%" required autofocus>
+                        <button id="btnCheck" type="submit" class="btn btn-lg btn-primary swanky-and-moo-moo-regular">Look Up</button>
+                    </div>
+                    <span id="errTip" class="m-2"></span>
+                </fieldset>
+                <input type="hidden" name="g-recaptcha-response" id="whois_form_hidden_cf_response" value="">
+            </form>
+
+            <div id="whoisInfo" class="mt-5" style="display: none;">
+                <table class="table table-striped-columns table-bordered table-group-divider">
+                    <thead>
+                        <tr>
+                            <th class="swanky-and-moo-moo-regular" scope="col" style="width: 180px;">Domain</th>
+                            <th scope="col" id="field-domain"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row" class="swanky-and-moo-moo-regular">Status</th>
+                            <td id="field-status"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="swanky-and-moo-moo-regular">Registered Date</th>
+                            <td id="field-created-at"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="swanky-and-moo-moo-regular">Expires Date</th>
+                            <td id="field-expires-at"></td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="swanky-and-moo-moo-regular">Administrative Email</th>
+                            <td id="field-expires-at">
+                                <span id="field-contact" style="word-break: break-all;"></span><br/>
+                                REDACTED FOR PRIVACY[<a href="javascript:void(0)" onclick="contactForm()">Contact</a>]
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row" class="swanky-and-moo-moo-regular">DNS Server</th>
+                            <td id="field-ns-servers"></td>
+                        </tr>
+                    </tbody>
+
+                </table>
+            </div>
+        </div>
+
+        <div class="modal modal-lg fade" id="modalContact" tabindex="-1" aria-labelledby="modalContactLabel" aria-modal="true" role="dialog">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="modalContactLabel">Contact form</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="return window.contactSend()">
+                        <input type="hidden" name="g-recaptcha-response" id="contact_form_hidden_cf_response" value="">
+                        <div class="mb-4">
+                            <label class="mb-1" for="emailAddress">Your E-mail address</label>
+                            <input type="email" name="email" class="form-control form-control-lg" id="emailAddress" placeholder="name@example.com, the domain owner will reply to your email" autocomplete="email">
+                        </div>
+                        <div class="mb-4">
+                            <label class="mb-1" for="emailSubject">Subject</label>
+                            <input type="text" name="subject" class="form-control form-control-lg" id="emailSubject" autocomplete="email-subject">
+                        </div>
+                        <div class="mb-4">
+                            <label class="mb-1" for="emailBody">Message</label>
+                            <textarea name="body" class="form-control form-control-lg" id="emailBody" autocomplete="email-body" rows="8"></textarea>
+                        </div>
+            
+                        <button class="btn btn-primary btn-lg py-2 w-100" type="submit">Send</button>
+                    </form>
+                    <p class="pt-2 text-body-secondary">© 2024</p>
+                </div>
+              </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="modalError" tabindex="-1" aria-labelledby="modalErrorLabel" aria-modal="true" role="dialog">
+            <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 335px;">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="modalErrorLabel">Error</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
+                </div>
+                <div class="modal-body">
+                    The function is not implemented yet!
+                </div>
+              </div>
+            </div>
+        </div>
+
+%%FOOTER%%
+
+%%RECAPTCHA%%
+
+<script>
+    window.modalContact = new bootstrap.Modal(document.getElementById('modalContact'), {})
+    window.modalError = new bootstrap.Modal(document.getElementById('modalError'), {})
+
+    window.whoisQuery = function () {
+        if (document.querySelector('#domainField').value.trim().length > 0 && !document.querySelector('#domainField').value.trim().toLowerCase().endsWith('.com.mp') && !document.querySelector('#domainField').value.trim().includes('.')) {
+            document.querySelector('#domainField').value = document.querySelector('#domainField').value.trim() + '.com.mp';
+        }
+        document.querySelector('#whoisInfo').style.display = 'none';
+        window.captchaChallenge(function (challengeResponse) {
+            document.querySelector('#whois_form_hidden_cf_response').value = challengeResponse;
+
+            document.querySelector('#btnCheck').setAttribute('disabled', 'disabled');
+            document.querySelector('#btnCheck').innerHTML = 'Checking...';
+            document.querySelector('#errTip').innerHTML = '';
+
+            const formdata = new FormData(document.querySelector('#queryForm'));
+            const data = {};
+            for (const key of [...formdata.keys()]) {
+                data[key] = formdata.get(key);
+            }
+
+            fetch(location.href, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            }).then((res) => res.json()).then((json) => {
+                if (!json.success) {
+                    document.querySelector('#errTip').innerHTML = json.message;
+                    return;
+                }
+
+                if (!json.data.exists) {
+                    var domain = document.querySelector('#domainField').value;
+                    document.querySelector('#errTip').innerHTML = 'Domain ' + domain + ' is not registered. <a href="/dashboard/reg-domain?domain=' + domain + '">register now</a>!';
+                    return;
+                }
+                // document.querySelector('#queryForm').style.display = 'none';
+                document.querySelector('#whoisInfo').style.display = 'block';
+
+                document.querySelector('#field-domain').innerHTML = json.data.domain.domain;
+                document.querySelector('#field-status').innerHTML = ({
+                    1: 'OK',
+                    2: 'Pending',
+                    3: 'ClientHold',
+                    4: 'ServerHold',
+                    5: 'Redemption',
+                    6: 'PendingDelete',
+                    7: 'PendingTransfer',
+                    8: 'PendingUpdate',
+                    9: 'PendingRenewal',
+                })[json.data.domain.status];
+                document.querySelector('#field-expires-at').innerHTML = (new Date(json.data.domain.expires_at)).toISOString();
+                document.querySelector('#field-created-at').innerHTML = (new Date(json.data.domain.created_at)).toISOString();
+                document.querySelector('#field-contact').innerHTML = json.data.domain.contact;
+                if (json.data.domain.ns_servers && json.data.domain.ns_servers.length > 0) {
+                    document.querySelector('#field-ns-servers').innerHTML = json.data.domain.ns_servers.join('<br/>');
+                }
+            }).finally(() => {
+                document.querySelector('#btnCheck').removeAttribute('disabled');
+                document.querySelector('#btnCheck').innerHTML = 'Look Up';
+            });
+            return false;
+        });
+
+        return false;
+    };
+
+    window.contactForm = function () {
+        window.modalContact.show();
+    };
+
+    window.contactSend = function () {
+        window.captchaChallenge(function (challengeResponse) {
+            document.querySelector('#contact_form_hidden_cf_response').value = challengeResponse;
+            window.modalError.show();
+        });
+        return false;
+    }
+
+    if (document.querySelector('#domainField').value.trim().length) {
+        window.whoisQuery();
+    }
+</script>

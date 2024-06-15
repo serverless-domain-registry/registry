@@ -1,0 +1,24 @@
+%%HEADER%%
+<form method="POST" action="/login" onsubmit="window.doLogin()">
+    <input type="hidden" name="action" value="check">
+    <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
+    <h1 class="h3 mb-3 fw-normal">Login / Register</h1>
+
+    <div class="form-floating">
+        <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com" autocomplete="email" required>
+        <label for="floatingInput">Email address</label>
+    </div>
+
+    <button class="btn btn-primary btn-lg py-2 rounded-top-0 w-100" type="submit" id="btnSubmit">Authenticate</button>
+    <p class="mt-5 mb-3 text-body-secondary">© 2024</p>
+</form>
+%%FOOTER%%
+
+<script>
+    window.doLogin = function () {
+        document.querySelector('#btnSubmit').innerHTML = 'Pending...';
+        document.querySelector('#btnSubmit').setAttribute('disabled', true);
+        return true;
+    };
+    document.querySelector('#floatingInput').focus();
+</script>

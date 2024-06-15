@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en" data-bs-theme="auto">
+
+<head>
+    <script src="https://getbootstrap.com/docs/5.3/assets/js/color-modes.js"></script>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <title>Com.MP Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hurricane&display=swap" rel="stylesheet">
+
+    <meta name="theme-color" content="#712cf9">
+
+    <style>
+        .hurricane-regular {
+            font-family: "Hurricane", cursive;
+            font-weight: 400;
+            font-style: normal;
+        }
+    </style>
+
+    <style>
+        .bd-placeholder-img {
+            font-size: 1.125rem;
+            text-anchor: middle;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        @media (min-width: 768px) {
+            .bd-placeholder-img-lg {
+                font-size: 3.5rem;
+            }
+        }
+
+        .b-example-divider {
+            width: 100%;
+            height: 3rem;
+            background-color: rgba(0, 0, 0, .1);
+            border: solid rgba(0, 0, 0, .15);
+            border-width: 1px 0;
+            box-shadow: inset 0 .5em 1.5em rgba(0, 0, 0, .1), inset 0 .125em .5em rgba(0, 0, 0, .15);
+        }
+
+        .b-example-vr {
+            flex-shrink: 0;
+            width: 1.5rem;
+            height: 100vh;
+        }
+
+        .bi {
+            vertical-align: -.125em;
+            fill: currentColor;
+        }
+
+        .nav-scroller {
+            position: relative;
+            z-index: 2;
+            height: 2.75rem;
+            overflow-y: hidden;
+        }
+
+        .nav-scroller .nav {
+            display: flex;
+            flex-wrap: nowrap;
+            padding-bottom: 1rem;
+            margin-top: -1px;
+            overflow-x: auto;
+            text-align: center;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .btn-bd-primary {
+            --bd-violet-bg: #712cf9;
+            --bd-violet-rgb: 112.520718, 44.062154, 249.437846;
+
+            --bs-btn-font-weight: 600;
+            --bs-btn-color: var(--bs-white);
+            --bs-btn-bg: var(--bd-violet-bg);
+            --bs-btn-border-color: var(--bd-violet-bg);
+            --bs-btn-hover-color: var(--bs-white);
+            --bs-btn-hover-bg: #6528e0;
+            --bs-btn-hover-border-color: #6528e0;
+            --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+            --bs-btn-active-color: var(--bs-btn-hover-color);
+            --bs-btn-active-bg: #5a23c8;
+            --bs-btn-active-border-color: #5a23c8;
+        }
+
+        .bd-mode-toggle {
+            z-index: 1500;
+        }
+
+        .bd-mode-toggle .dropdown-menu .active .bi {
+            display: block !important;
+        }
+    </style>
+
+    <style>
+        .grid {
+            display: grid;
+            grid-template-rows: repeat(var(--bs-rows, 1), 1fr);
+            grid-template-columns: repeat(var(--bs-columns, 12), 1fr);
+            gap: var(--bs-gap, 1.5rem)
+        }
+
+        .grid .g-col-1 {
+            grid-column: auto/span 1
+        }
+
+        .grid .g-col-2 {
+            grid-column: auto/span 2
+        }
+
+        .grid .g-col-3 {
+            grid-column: auto/span 3
+        }
+
+        .grid .g-col-4 {
+            grid-column: auto/span 4
+        }
+
+        .grid .g-col-5 {
+            grid-column: auto/span 5
+        }
+
+        .grid .g-col-6 {
+            grid-column: auto/span 6
+        }
+
+        .grid .g-col-7 {
+            grid-column: auto/span 7
+        }
+
+        .grid .g-col-8 {
+            grid-column: auto/span 8
+        }
+
+        .grid .g-col-9 {
+            grid-column: auto/span 9
+        }
+
+        .grid .g-col-10 {
+            grid-column: auto/span 10
+        }
+
+        .grid .g-col-11 {
+            grid-column: auto/span 11
+        }
+
+        .grid .g-col-12 {
+            grid-column: auto/span 12
+        }
+
+        .grid .g-start-1 {
+            grid-column-start: 1
+        }
+
+        .grid .g-start-2 {
+            grid-column-start: 2
+        }
+
+        .grid .g-start-3 {
+            grid-column-start: 3
+        }
+
+        .grid .g-start-4 {
+            grid-column-start: 4
+        }
+
+        [data-bs-theme="dark"] .nav-scroller .active {
+            color: #fff;
+        }
+    </style>
+    <link href="https://getbootstrap.com/docs/5.3/examples/offcanvas-navbar/offcanvas-navbar.css" rel="stylesheet">
+</head>
+
+<body class="bg-body-tertiary">
+    <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+        <symbol id="check2" viewBox="0 0 16 16">
+            <path
+                d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z" />
+        </symbol>
+        <symbol id="circle-half" viewBox="0 0 16 16">
+            <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z" />
+        </symbol>
+        <symbol id="moon-stars-fill" viewBox="0 0 16 16">
+            <path
+                d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z" />
+            <path
+                d="M10.794 3.148a.217.217 0 0 1 .412 0l.387 1.162c.173.518.579.924 1.097 1.097l1.162.387a.217.217 0 0 1 0 .412l-1.162.387a1.734 1.734 0 0 0-1.097 1.097l-.387 1.162a.217.217 0 0 1-.412 0l-.387-1.162A1.734 1.734 0 0 0 9.31 6.593l-1.162-.387a.217.217 0 0 1 0-.412l1.162-.387a1.734 1.734 0 0 0 1.097-1.097l.387-1.162zM13.863.099a.145.145 0 0 1 .274 0l.258.774c.115.346.386.617.732.732l.774.258a.145.145 0 0 1 0 .274l-.774.258a1.156 1.156 0 0 0-.732.732l-.258.774a.145.145 0 0 1-.274 0l-.258-.774a1.156 1.156 0 0 0-.732-.732l-.774-.258a.145.145 0 0 1 0-.274l.774-.258c.346-.115.617-.386.732-.732L13.863.1z" />
+        </symbol>
+        <symbol id="sun-fill" viewBox="0 0 16 16">
+            <path
+                d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z" />
+        </symbol>
+    </svg>
+
+    <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
+        <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center" id="bd-theme" type="button"
+            aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+            <svg class="bi my-1 theme-icon-active" width="1em" height="1em">
+                <use href="#circle-half"></use>
+            </svg>
+            <span class="visually-hidden" id="bd-theme-text">Toggle theme</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bd-theme-text">
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="light"
+                    aria-pressed="false">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#sun-fill"></use>
+                    </svg>
+                    Light
+                    <svg class="bi ms-auto d-none" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark"
+                    aria-pressed="false">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#moon-stars-fill"></use>
+                    </svg>
+                    Dark
+                    <svg class="bi ms-auto d-none" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+            <li>
+                <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="auto"
+                    aria-pressed="true">
+                    <svg class="bi me-2 opacity-50" width="1em" height="1em">
+                        <use href="#circle-half"></use>
+                    </svg>
+                    Auto
+                    <svg class="bi ms-auto d-none" width="1em" height="1em">
+                        <use href="#check2"></use>
+                    </svg>
+                </button>
+            </li>
+        </ul>
+    </div>
+
+
+    <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-dark" aria-label="Main navigation">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <span class="hurricane-regular"
+                    style="font-size: 28px;font-weight: bold;display: block;width: 80px;height: 30px;margin-top: -13px;">Com.Mp</span>
+            </a>
+            <button class="navbar-toggler p-0 border-0" type="button" id="navbarSideCollapse"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="/dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/dashboard/domains">My Domains</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/reg-domain">Register Domains</a>
+                    </li>
+                </ul>
+                <ul class="mb-2 mb-lg-0 navbar-nav">
+                    <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-success" type="submit">Search</button>
+                    </form>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"
+                            aria-expanded="false">%%USER.EMAIL%%</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/dashboard/balance">Balance <small
+                                        class="text-body-tertiary">($%%USER.CREDIT%%)</small></a></li>
+                            <li class="dropdown-divider" />
+                            <li><a class="dropdown-item" href="/dashboard/profile">Profile</a></li>
+                            <li><a class="dropdown-item" href="/dashboard/security">Account Security</a></li>
+                            <li class="dropdown-divider" />
+                            <li><a class="dropdown-item" href="/dashboard/logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="nav-scroller bg-body shadow-sm">
+        <nav class="nav" aria-label="Secondary navigation">
+            <a class="nav-link active" href="/dashboard/domains">
+                Domains
+                <!--
+                    <span class="badge text-bg-light rounded-pill align-text-bottom">27</span>
+                -->
+            </a>
+            <a class="nav-link" href="#" onclick="alert('available soon');">Expires soon</a>
+        </nav>
+    </div>
+
+    <main class="container">
+        <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm" onclick="location.href = 'tg://resolve?domain=com_mp'">
+            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 20 20" width="30"><path d="m1.77404283 9.58769086c4.67714245-1.99564845 7.79596997-3.31130205 9.35648257-3.9469608 4.4555806-1.81493491 5.381412-2.13020854 5.984856-2.14061906.1327219-.0022897.4294781.02992311.6217044.18267827.162312.12898346.2069705.30322179.2283411.42551228.0213705.12229049.047982.40087134.0268279.61854631-.2414495 2.48450744-1.2861975 8.51375174-1.817706 11.29644264-.2249011 1.1774608-.6709749 1.4294697-1.0996928 1.4681058-.9317032.0839651-1.6359598-.4602232-2.5383599-1.0395344-1.412078-.9065075-1.9311138-1.1506648-3.30178003-2.0352487-1.58404193-1.0222898-.71982554-1.5573792.18291533-2.4756292.23625159-.2403103 4.3705401-3.98382431 4.4499945-4.31554914.0099371-.04148774-.12607-.45629906-.2198814-.53795815s-.2322689-.05373486-.3321837-.03152647c-.1416262.03147972-2.397439 1.49167812-6.76743852 4.38059516-.64030496.4305972-1.22027332.6403987-1.73990507.6294043-.5728523-.0121204-1.67479033-.3172064-2.49396798-.5779863-1.00475474-.3198572-1.37564449-.4704946-1.30610794-1.013711.03621894-.2829407.29151946-.57846124.76590154-.88656154z" fill="#fff" fill-rule="evenodd"></path></svg>
+            <div>
+                <h1 class="h6 m-0" style="margin-left: 10px !important;">Join our Telegram group!</h1>
+            </div>
+        </div>
+
+        <div class="my-3 p-3 bg-body rounded shadow-sm">
+            <h6 class="border-bottom pb-2 mb-0">My domains</h6>
+
+            <div id="domain-list">
+                <div class="d-flex text-body-secondary pt-3 border-bottom">
+                    <p class="pb-3 mb-0 small lh-sm">
+                        <strong class="d-block text-gray-dark">
+                            <svg class="flex-shrink-0 me-2" width="200" height="14">
+                                <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                    y="50%" fill="#007bff" dy=".3em"></text>
+                            </svg>
+                        </strong><svg class="flex-shrink-0 me-2" width="150" height="14">
+                            <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                y="50%" fill="#007bff" dy=".3em"></text>
+                        </svg>
+                    </p>
+                </div>
+
+                <div class="d-flex text-body-secondary pt-3 border-bottom">
+                    <p class="pb-3 mb-0 small lh-sm">
+                        <strong class="d-block text-gray-dark">
+                            <svg class="flex-shrink-0 me-2" width="200" height="14">
+                                <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                    y="50%" fill="#007bff" dy=".3em"></text>
+                            </svg>
+                        </strong><svg class="flex-shrink-0 me-2" width="150" height="14">
+                            <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                y="50%" fill="#007bff" dy=".3em"></text>
+                        </svg>
+                    </p>
+                </div>
+
+                <div class="d-flex text-body-secondary pt-3 border-bottom">
+                    <p class="pb-3 mb-0 small lh-sm">
+                        <strong class="d-block text-gray-dark">
+                            <svg class="flex-shrink-0 me-2" width="200" height="14">
+                                <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                    y="50%" fill="#007bff" dy=".3em"></text>
+                            </svg>
+                        </strong><svg class="flex-shrink-0 me-2" width="150" height="14">
+                            <rect width="100%" height="100%" fill="rgba(222, 226, 230, 0.25)"></rect><text x="50%"
+                                y="50%" fill="#007bff" dy=".3em"></text>
+                        </svg>
+                    </p>
+                </div>
+            </div>
+
+            <div class="grid gap-3 pt-3">
+                <div class="g-col-7">
+                    <nav aria-label="Page navigation" class="d-inline-block mt-4" style="margin-right: 5px;">
+                        <ul class="pagination hide" id="pagination"> </ul>
+                    </nav>
+                    <span class="d-inline-block mt-4">
+                        <select class="d-inline-block form-control w-auto" name="page_size" onchange="window.page_size = this.value; window.page = 1; window.loadPage(window.page, this.value, window.search, window.sort, window.order);">
+                            <option value="10" selected="">10 Rows</option>
+                            <option value="20">20 Rows</option>
+                            <option value="50">50 Rows</option>
+                            <option value="100">100 Rows</option>
+                        </select>
+                    </span>
+                </div>
+                <div class="g-col-2">
+                    Search by
+                    <input class="form-control" placeholder="Domain keywords" name="keyword" onchange="window.search = this.value; window.page = 1; window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);">
+                </div>
+                <div class="g-col-2">
+                    Sort by
+                    <select class="form-control" name="sort" onchange="window.sort = this.value; window.page = 1; window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);">
+                        <option value="created_at" selected>Created At</option>
+                        <option value="expires_at">Expires At</option>
+                        <option value="domain">Domain Name</option>
+                    </select>
+                </div>
+                <div class="g-col-1">
+                    Order by
+                    <select class="form-control" name="sort" onchange="window.order = this.value; window.page = 1; window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);">
+                        <option value="ASC" selected>ASC</option>
+                        <option value="DESC">DESC</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="modal fade" id="modalRefreshing" tabindex="-1" aria-labelledby="modalRefreshingLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 235px; margin: auto;">
+            <div class="modal-content" style="outline: 9999px solid rgba(0, 0, 0, 0.5); border: 0;">
+                <div class="modal-body text-center">
+                    <span class="hurricane-regular" style="font-size: 20px;font-weight: bold;display: block;width: 80px;height: 30px;margin: -5px auto;">Com.Mp</span>
+                </div>
+            </div>
+        </div>
+    </div>      
+
+    <div class="modal fade" id="modalRenew" tabindex="-1" aria-labelledby="modalRenewLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 335px;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="modalRenewLabel">Renew domain</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="return window.renewDomain(this);">
+                    <input type="hidden" name="g-recaptcha-response" id="renew_form_hidden_cf_response">
+
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control form-control-lg" name="domain" id="domainInput" placeholder="Domain" readonly>
+                        <label for="domainInput">Domain</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <select class="form-control form-control-lg" name="period" id="periodInput" placeholder="Select renew period">
+                            <option value="90" id="option-90-days">90 Days - $0.00</option>
+                            <option value="365" id="option-1-year">1 Year(365 Days) - $0.99</option>
+                            <option value="730" id="option-2-years">2 Years(730 Days) - $1.98</option>
+                            <option value="1095" id="option-3-years">3 Years(1095 Days) - $2.97</option>
+                        </select>
+                        <label for="periodInput">Period</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="btn-submit">Submit</button>
+                </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalUpdateDns" tabindex="-1" aria-labelledby="modalUpdateDnsLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="modalUpdateDnsLabel">Update DNS</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
+            </div>
+            <div class="modal-body">
+                <form onsubmit="return window.changeDomainDnsFormSubmit(this);">
+                    <input type="hidden" name="g-recaptcha-response" id="UpdateDns_form_hidden_cf_response">
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control form-control-lg" name="domain" id="updateDnsDialog-domainInput" placeholder="Domain" readonly>
+                        <label for="updateDnsDialog-domainInput">Domain</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <textarea class="form-control form-control-lg" name="dns_servers" id="updateDnsDialog-nsServersInput" placeholder="DNS Servers" rows="8" style="height: 198px;"></textarea>
+                        <label for="updateDnsDialog-nsServersInput">DNS Servers</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="btn-dns-submit">Submit</button>
+                </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://getbootstrap.com/docs/5.3/examples/offcanvas-navbar/offcanvas-navbar.js"></script>
+    <script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/showModal.js"></script>
+    <script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
+    %%RECAPTCHA%%
+
+    <script>
+        window.modalRenewDom = document.getElementById('modalRenew');
+        window.modalRenew = new bootstrap.Modal(window.modalRenewDom, {})
+        window.modalRenewDom.addEventListener('shown.bs.modal', function (event) {
+            document.querySelector('#periodInput').focus();
+        });
+        window.modalUpdateDnsDom = document.getElementById('modalUpdateDns');
+        window.modalUpdateDns = new bootstrap.Modal(window.modalUpdateDnsDom, {})
+        window.modalUpdateDnsDom.addEventListener('shown.bs.modal', function (event) {
+            document.querySelector('#updateDnsDialog-nsServersInput').focus();
+            document.querySelector('#updateDnsDialog-nsServersInput').select();
+        });
+        window.modalRefreshing = new bootstrap.Modal(document.getElementById('modalRefreshing'), {})
+
+        window.url = location.href;
+        window.page = (new URL(url)).searchParams.get('page') || 1;
+        window.page_size = (new URL(url)).searchParams.get('page_size') || 10;
+        window.search = (new URL(url)).searchParams.get('search') || '';
+        window.sort = (new URL(url)).searchParams.get('sort') || 'created_at';
+        window.order = (new URL(url)).searchParams.get('order') || 'ASC';
+
+        window.loadPage = function (page, page_size, search, sort, order) {
+            window.modalRefreshing.show();
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    page: Number(page),
+                    page_size: Number(page_size),
+                    search: search,
+                    sort: sort,
+                    order: order
+                })
+            }).then(function (response) {return response.json();}).then(function (json) {
+                window.modalRefreshing.hide();
+                const list = json.data.list;
+                document.querySelector('#domain-list').innerHTML = [...list].map(function (item) {
+                    return `<div class="d-md-flex d-lg-flex text-body-secondary pt-3 border-bottom">
+                        <div class="pb-3 mb-0 small lh-sm w-25 w-sm-100 w-md-25 w-lg-25">
+                            <strong class="d-block text-gray-dark">
+                                ${item.domain}
+                                <span class="badge text-bg-success">${item.status === 1 ? 'OK' : item.status}</span>
+                            </strong>
+                            <div class="d-flex w-100 d-flex justify-content-between">
+                                <span>
+                                    Expiration: <span class="badge text-bg-light">${new Date(item.expires_at).toISOString().split('T')[0]}</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div style="margin-left: 20px;text-align: right;" class="w-100">
+                            <span class="d-inline-block small" style="margin-right: 10px;">
+                                DNS Server:
+                                ${item.ns_servers.map(ns => `<span class="badge text-bg-light">${ns}</span>`).join(' ')}
+                            </span>
+                            <div class="btn-group">
+                                <button type="button" class="btn btn-outline-secondary" onclick="bootstrap.showAlert({title: null, body: 'Detail and contact info management will be available soon(ETA: 18th, Jun)!',headerClass: 'hide',modalDialogClass: 'modal-dialog-centered',});">Manage</button>
+                                <button type="button" class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <span class="visually-hidden">Toggle Dropdown</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
+                                    <li><a class="dropdown-item" onclick="bootstrap.showAlert({title: null, body: 'Detail and contact info management will be available soon(ETA: 18th, Jun)!',headerClass: 'hide',modalDialogClass: 'modal-dialog-centered',});">Detail</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="window.changeDomainDnsServer('${item.domain}', '${item.ns_servers.join(',')}');">NS Server</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="window.renew('${item.domain}', '${item.type}')">Renewal</a></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>`;
+                }).join(`\n`);
+
+                window.renderPage = function (pageNumber, label) {
+                    return `<li class="page-item"><a class="page-link" href="#" onclick="window.loadPage(${pageNumber}, window.page_size, window.search, window.sort, window.order)" tabindex="-1" id="paginate-${label ? label.toLowerCase() : pageNumber}-page">${label ? label : pageNumber}</a></li>`;
+                };
+                window.renderSelectPage = function (totalPage, page) {
+                    return `
+                        <select class="bg-primary border-0 form-control rounded-0 text-white text-center" placeholder="Page to go" title="click to jump page" aria-label="Page number to go to" style="width: ${23 + 10 * page.toString().length}px;" onchange="window.loadPage(this.value, window.page_size, window.search, window.sort, window.order)">
+                            ${
+                                [...Array(totalPage).keys()].map(
+                                    (item) => `<option value="${item + 1}" ${item + 1 === page ? 'selected' : ''}>${item + 1}</option>`
+                                ).join('')
+                            }
+                        </select>`;
+                };
+
+                document.querySelector('#pagination').innerHTML = ``;
+
+                if (json.data.paginate.total > 1) {
+                    var hasFirst = false, hasLast = false;
+                    document.querySelector('#pagination').innerHTML += window.renderPage(Math.max(1, json.data.paginate.page - 1), `Previous`);
+                    if (json.data.paginate.page === 1) {
+                        document.querySelector('#pagination').innerHTML += window.renderSelectPage(json.data.paginate.last, json.data.paginate.page);
+                    } else {
+                        document.querySelector('#pagination').innerHTML += window.renderPage(json.data.paginate.first);
+                    }
+                    if (Math.max(json.data.paginate.first, json.data.paginate.page - 2) - json.data.paginate.first > 1) {
+                        document.querySelector('#pagination').innerHTML += `<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">...</a></li>`;
+                    }
+                    for (var page = Math.max(json.data.paginate.first, json.data.paginate.page - 2); page <= Math.min(json.data.paginate.last, json.data.paginate.page + 2); page++) {
+                        if (page == json.data.paginate.first) {
+                            hasFirst = true;
+                            continue;
+                        } else if (page == json.data.paginate.last) {
+                            hasLast = true;
+                            continue;
+                        }
+                        if (page === json.data.paginate.page) {
+                            document.querySelector('#pagination').innerHTML += window.renderSelectPage(json.data.paginate.last, json.data.paginate.page);
+                            continue;
+                        }
+                        document.querySelector('#pagination').innerHTML += window.renderPage(page);
+                    }
+                    if (json.data.paginate.last - Math.min(json.data.paginate.last, json.data.paginate.page + 2) > 1) {
+                        document.querySelector('#pagination').innerHTML += `<li class="page-item disabled"><a class="page-link" href="#" tabindex="-1">...</a></li>`;
+                    }
+                    if (json.data.paginate.page === json.data.paginate.last) {
+                        document.querySelector('#pagination').innerHTML += window.renderSelectPage(json.data.paginate.last, json.data.paginate.page);
+                    } else {
+                        document.querySelector('#pagination').innerHTML += window.renderPage(json.data.paginate.last);
+                    }
+                    document.querySelector('#pagination').innerHTML += window.renderPage(Math.min(json.data.paginate.last, json.data.paginate.page + 1), `Next`);
+
+                    if (!json.data.paginate.prev) {
+                        document.querySelector('#paginate-previous-page').parentElement.classList.add('disabled');
+                    } else {
+                        document.querySelector('#paginate-previous-page').parentElement.classList.remove('disabled');
+                    }
+
+                    if (!json.data.paginate.next) {
+                        document.querySelector('#paginate-next-page').parentElement.classList.add('disabled');
+                    } else {
+                        document.querySelector('#paginate-next-page').parentElement.classList.remove('disabled');
+                    }
+                    document.querySelector('#pagination').classList.remove('hide');
+                }
+
+                window.page = json.data.paginate.page;
+                window.page_size = json.data.paginate.page_size;
+                history.pushState({}, '', `?page=${json.data.paginate.page}&page_size=${json.data.paginate.page_size}&search=${json.data.search}&sort=${json.data.sort}&order=${json.data.order}`);
+            }).catch(function (err) {
+                window.modalRefreshing.hide();
+            }).finally(function () {
+                window.modalRefreshing.hide();
+            });
+        };
+
+        window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);
+
+        window.renew = function (domain, type) {
+            document.querySelector('#domainInput').value = domain;
+            if (type == 'paid') {
+                document.querySelector('#option-90-days').style.display = 'none';
+                document.querySelector('#periodInput').value = '365';
+            } else {
+                document.querySelector('#option-90-days').style.display = 'block';
+                document.querySelector('#periodInput').value = '90';
+            }
+            if (%%USER.CREDIT%% < 2.97) {
+                document.querySelector('#option-3-years').setAttribute('disabled', true);
+            }
+            if (%%USER.CREDIT%% < 1.98) {
+                document.querySelector('#option-2-years').setAttribute('disabled', true);
+            }
+            if (%%USER.CREDIT%% < 0.99) {
+                document.querySelector('#option-1-year').setAttribute('disabled', true);
+            }
+            window.modalRenew.show();
+        };
+
+        window.renewDomain = function (form) {
+            document.querySelector('#btn-submit').innerHTML = 'Proceeding...';
+            document.querySelector('#btn-submit').setAttribute('disabled', true);
+
+            window.captchaChallenge(function (challengeResponse) {
+                document.querySelector('#renew_form_hidden_cf_response').value = challengeResponse;
+
+                var domain = form.elements['domain'].value;
+                var period = form.elements['period'].value;
+                fetch('/dashboard/renew-domain', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        domain: domain,
+                        period: period,
+                        'g-recaptcha-response': challengeResponse,
+                    })
+                })
+                .then(function (res) { return res.json()})
+                .then(function (json) {
+                    if (!json.success) {
+                        return bootstrapToastr({
+                            title: 'Fail!',
+                            message: json.message,
+                            duraction: 5000
+                        });
+                    }
+
+                    window.modalRenew.hide();
+                    window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);
+
+                    return bootstrapToastr({
+                        title: 'Success!',
+                        message: json.message,
+                        duraction: 5000
+                    });
+                }).finally(function () {
+                    document.querySelector('#btn-submit').innerHTML = 'Submit';
+                    document.querySelector('#btn-submit').removeAttribute('disabled');
+                });
+            });
+
+            return false;
+        };
+
+        window.changeDomainDnsServer = function (domain, nsServersComma) {
+            document.querySelector('#updateDnsDialog-domainInput').value = domain;
+            document.querySelector('#updateDnsDialog-nsServersInput').value = nsServersComma.trim().split(',').filter(Boolean).map(function (item) { return item.trim(); }).join(`\n`);
+            window.modalUpdateDns.show();
+        };
+
+        window.changeDomainDnsFormSubmit = function (form) {
+            document.querySelector('#btn-dns-submit').innerHTML = 'Proceeding...';
+            fetch('/dashboard/dns-servers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    domain: form.elements['domain'].value,
+                    dns_servers: form.elements['dns_servers'].value.trim().split(`\n`).filter(Boolean).map(function (item) { return item.trim(); }),
+                }),
+            })
+            .then(function (res) { return res.json()})
+            .then(function (json) {
+                if (!json.success) {
+                    return bootstrapToastr({
+                        title: 'Fail!',
+                        message: json.message,
+                        duraction: 5000
+                    });
+                }
+
+                return bootstrapToastr({
+                    title: 'Success',
+                    message: 'DNS servers updated successfully',
+                    duraction: 5000
+                });
+
+                window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);
+                window.modalUpdateDns.hide();
+            })
+            .finally(function () {
+                document.querySelector('#btn-dns-submit').innerHTML = 'Submit';
+                document.querySelector('#btn-dns-submit').removeAttribute('disabled');
+            });
+            return false;
+        };
+    </script>
+
+%%LIVECHAT%%
+</body>
+
+</html>

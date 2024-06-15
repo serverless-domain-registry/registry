@@ -1,0 +1,43 @@
+<style>
+  .grecaptcha-badge {
+    width: 70px !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+    left: 1px !important;
+  }
+  .grecaptcha-badge:hover {
+    width: 256px !important;
+  }
+</style>
+
+<div class="modal fade" id="modalCaptcha" tabindex="-1" aria-labelledby="modalCaptchaLabel" aria-modal="true" role="dialog">
+  <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 435px; margin: auto;">
+    <div class="modal-content" style="outline: 9999px solid rgba(0, 0, 0, 0.5); border: 0;">
+      <div class="modal-body">
+        Performing reCAPTCHA challenge...
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.recaptcha.net/recaptcha/api.js?render=%%SITE_KEY%%"></script>
+<script>
+  window.modalCaptcha = new bootstrap.Modal(document.getElementById('modalCaptcha'), {
+    backdrop: false,
+  })
+
+  window.captchaChallenge = function (resolve) {
+    window.modalCaptcha.show();
+    setTimeout(function () {
+      window.modalCaptcha.hide();
+    }, 800);
+    grecaptcha.ready(function() {
+      grecaptcha.execute('%%SITE_KEY%%', {action: 'submit'}).then(function(challengeResponse) {
+        window.modalCaptcha.hide();
+        resolve(challengeResponse);
+      }).catch(function(error) {
+        window.modalCaptcha.hide();
+      });
+    });
+  };
+</script>

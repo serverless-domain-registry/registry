@@ -1,0 +1,159 @@
+%%HEADER%%
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PeytonRG/BootstrapToaster@4.1.2/css/bootstrap-toaster.min.css">
+
+<form method="POST" action="/login" onsubmit="return window.register(this);">
+    <input type="hidden" name="action" value="register">
+    <input type="hidden" name="secret" value="%%SECRET%%">
+    <input type="hidden" name="g-recaptcha-response" id="register_form_hidden_cf_response" value="">
+
+    <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
+    <h1 class="h3 mb-3 fw-normal">Register</h1>
+
+    <div class="form-floating">
+        <input type="email" name="email" class="form-control rounded-bottom-0" id="emailInput" value="%%EMAIL%%" readonly disabled>
+        <label for="emailInput">Email address</label>
+    </div>
+    <div class="form-floating">
+        <input type="number" name="token" class="form-control rounded-0" id="tokenInput" placeholder="6 digits number" autocomplete="off" maxlength="6">
+        <label for="tokenInput">MFA Code</label>
+    </div>
+    <button class="btn btn-primary btn-lg rounded-top-0 py-2 rounded-top-0 w-100" type="submit" id="btn-submit">Next: email activation</button>
+    <p class="mt-5 mb-3 text-body-secondary">© 2024</p>
+</form>
+%%FOOTER%%
+<script src="https://cdn.jsdelivr.net/npm/@qrcode-js/browser@1.2.0/dist/index.js"></script>
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/showModal.js"></script>
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
+%%RECAPTCHA%%
+<script>
+    var otpUrl = 'otpauth://totp/Com.MP Domains:%%EMAIL%%?secret=%%SECRET%%&issuer=Com.MP Domains';
+    var tk = document.querySelector('#tokenInput');
+    var popover = new bootstrap.Popover(tk, {
+        toggle: "popover",
+        title: window.innerWidth > 850 ? "Scan with authenticator app" : "Add MFA to your device",
+        content: window.innerWidth > 850 ?
+            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" class="btn btn-primary btn-sm">Click to Add OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`: 
+            `<a href="${otpUrl}" class="btn btn-primary btn-sm">Click to Add OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`
+        ,
+        trigger: "custom",
+        placement: window.innerWidth < 850 ? 'top' : "right",
+        html: true,
+    });
+
+    
+    tk.addEventListener('shown.bs.popover', () => {
+        if (window.innerWidth > 850 ) {
+            var canvas = document.createElement('canvas');
+            canvas.style.width = '242px';
+            canvas.style.height = '242px';
+            document.querySelector('#canvasContainer').appendChild(canvas);
+
+            var myQR = QRCode.QRCodeBrowser(canvas);
+            myQR.setOptions({
+                text: otpUrl,
+                color: document.getElementsByTagName('html')[0].getAttribute('data-bs-theme') === 'dark' ? '#fff' : "#000",
+                size: 484,
+                finder: {
+                    round: 0.5,
+                },
+            });
+            myQR.draw();
+        }
+
+        document.querySelector('#btn-copy-otp').addEventListener('click', function () {
+            return window.copy(otpUrl);
+        });
+    });
+
+    window.retry = function () {
+        tk.focus();
+        popover.toggle();
+    };
+    window.retry();
+
+    window.register = function (form) {
+        if (!document.querySelector('#tokenInput').value) {
+            bootstrapToastr({
+                title: "MFA Code",
+                message: 'Please input MFA code.',
+                duraction: 5000
+            });
+            return false;
+        }
+        if (document.querySelector('#tokenInput').value.length != 6) {
+            bootstrapToastr({
+                title: "MFA Code",
+                message: 'MFA code is a 6 digits number.',
+                duraction: 5000
+            });
+            return false;
+        }
+
+        document.querySelector('#btn-submit').setAttribute('disabled', true)
+        document.querySelector('#btn-submit').innerHTML = 'Pending...';
+
+        window.captchaChallenge(function (challengeResponse) {
+            document.querySelector('#register_form_hidden_cf_response').value = challengeResponse;
+            setTimeout(function () {
+                fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: `register`,
+                        email: form.elements['email'].value,
+                        secret: form.elements['secret'].value,
+                        token: form.elements['token'].value,
+                        'g-recaptcha-response': document.querySelector('#register_form_hidden_cf_response').value,
+                    }),
+                }).then(function (res) {
+                    return res.json()
+                }).then(function (json) {
+                    popover.hide();
+                    bootstrapToastr({
+                        title: "Error",
+                        message: json.message,
+                        duraction: 5000
+                    });
+                    if (!json.success) {
+                        setTimeout(() => {
+                            window.retry();
+                        }, 6000);
+                    }
+                }).catch(function (err) {
+                    bootstrapToastr({
+                        title: "Error",
+                        message: err.message,
+                        duraction: 5000
+                    });
+                    setTimeout(() => {
+                        window.retry();
+                    }, 6000);
+                }).finally(function () {
+                    document.querySelector('#btn-submit').removeAttribute('disabled')
+                    document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
+                });
+            }, 500);
+        });
+
+        return false;
+    }
+
+    window.copy = function (text) {
+        var input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        bootstrapToastr({
+            title: "Tips",
+            message: 'Copied to clipboard.',
+            duraction: 5000
+        });
+        return false;
+    };
+</script>

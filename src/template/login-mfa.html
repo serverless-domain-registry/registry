@@ -1,0 +1,81 @@
+%%HEADER%%
+
+<form method="POST" action="/login" onsubmit="return window.doLogin(this);">
+    <input type="hidden" name="action" value="login">
+    <input type="hidden" name="g-recaptcha-response" id="login_form_hidden_cf_response" value="">
+
+    <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
+    <h1 class="h3 mb-3 fw-normal">Enter MFA code</h1>
+
+    <div class="form-floating">
+        <input type="email" name="email" class="form-control rounded-bottom-0" id="emailInput" value="%%EMAIL%%" readonly disabled>
+        <label for="emailInput">Email address</label>
+    </div>
+    <div class="form-floating">
+        <input type="number" name="token" class="form-control rounded-0" id="mfaField" placeholder="" maxlength="6">
+        <label for="mfaField">Enter your MFA code</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-lg rounded-top-0 py-2 rounded-top-0 w-100" id="btnSubmit">Sign in</button>
+    <p class="mt-5 mb-3 text-body-secondary">© 2024</p>
+</form>
+
+%%FOOTER%%
+
+%%RECAPTCHA%%
+<script>
+    document.querySelector('#mfaField').focus();
+
+    window.doLogin = function (form) {
+        document.querySelector('#btnSubmit').innerHTML = 'Pending...';
+        document.querySelector('#btnSubmit').setAttribute('disabled', true);
+
+        window.captchaChallenge(function (challengeResponse) {
+            document.querySelector('#login_form_hidden_cf_response').value = challengeResponse;
+            document.querySelector('#btnSubmit').innerHTML = 'Pending...';
+            document.querySelector('#btnSubmit').setAttribute('disabled', true);
+            fetch('/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: form.elements['action'].value,
+                        email: form.elements['email'].value,
+                        token: form.elements['token'].value,
+                        'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
+                    }),
+                }).then(function (res) {
+                    return res.json()
+                }).then(function (json) {
+                    if (json.success) {
+                        location.href = '/dashboard';
+                        document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
+                        return;
+                    }
+
+                    var tk = document.querySelector('#mfaField');
+                    var popover = new bootstrap.Popover(tk, {
+                        toggle: "popover",
+                        title: "Error",
+                        content: json.message,
+                        trigger: "custom",
+                        placement: window.innerWidth < 850 ? 'top' : "right",
+                        html: true,
+                    });
+                    setTimeout(function () {
+                        document.querySelector('#mfaField').focus();
+                        popover.show();
+                    }, 300);
+
+                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                    document.querySelector('#btnSubmit').removeAttribute('disabled');
+                }).catch(function () {
+                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                    document.querySelector('#btnSubmit').removeAttribute('disabled');
+                });
+        });
+        return false;
+    };
+</script>

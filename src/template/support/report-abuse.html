@@ -1,0 +1,26 @@
+%%HEADER%%
+        <div class="my-5 pt-5 px-4">
+            <h1 class="display-4 fw-bold text-body-emphasis text-center swanky-and-moo-moo-regular">Report abuse</h1>
+            <p class="text-center text-secondary" style="font-family: serif;">If you see any malicious link or any abuse situation in &lt;anydomain&gt;.com.mp, please report to us. we will suspend the domain name after confirm the abuse</p>
+        </div>
+
+        <div class="col-lg-8 col-md-10 col-sm-12 offset-lg-2 offset-md-1 offset-sm-0 pb-4">
+            <form id="queryForm" method="POST" action="/support/report-abuse" onsubmit="return window.whoisQuery(this)">
+                <input type="hidden" name="action" value="verifyuri">
+                <fieldset>
+                    <div class="input-group mb-3">
+                        <input type="text" id="urlField" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links" required autofocus>
+                        <button id="btnCheck" type="submit" class="btn btn-lg btn-primary swanky-and-moo-moo-regular">Next</button>
+                    </div>
+                    <span id="errTip" class="m-2"></span>
+                </fieldset>
+                <input type="hidden" name="g-recaptcha-response" id="report_abuse_form_hidden_cf_response" value="">
+            </form>
+        </div>
+%%FOOTER%%
+
+%%RECAPTCHA%%
+
+<script>
+
+</script>

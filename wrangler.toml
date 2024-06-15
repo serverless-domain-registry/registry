@@ -1,0 +1,12 @@
+name = "registry"
+main = "src/index.ts"
+compatibility_date = "2024-05-27"
+workers_dev = true
+
+[[d1_databases]]
+binding = "DB"
+database_name = "db"
+database_id = "f08680dd-36cd-4a0f-8578-be508b5c0e2a"
+
+[triggers]
+crons = ["0 0 * * *"]
