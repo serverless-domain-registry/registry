@@ -1,4 +1,4 @@
-import { Env } from './Env';
+import { Env } from './d/Env.ts';
 // @ts-ignore
 import headerTpl from 'template/common/header.html';
 // @ts-ignore
@@ -53,32 +53,21 @@ import uuid from './lib/uuid.ts';
 import loginSession from './lib/loginSession.ts';
 import logout from './pages/dashboard/logout.ts';
 import readRequestQuery from './lib/readRequestQuery.ts';
-import { bufferToHex, decryptData, encryptData, hexToBuffer, importKeyFromString } from './lib/aes.ts';
+import { bufferToHex, decryptData, encryptData, hexToBuffer, } from './lib/aes.ts';
 import { createNsRecord, deleteNsRecord } from './lib/dnspod.ts';
 import Epusdt from './lib/epusdt.ts';
 import sendmail from './lib/sendmail.ts';
+import { Domain, User } from './d/Models';
 
 export default {
-  async scheduled(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
+  async scheduled(controller, env, ctx) {
     console.log("Update expiration");
-
-    /**
-      1: 'OK',
-      2: 'Pending',
-      3: 'ClientHold',
-      4: 'ServerHold',
-      5: 'Redemption', w/i 30
-      6: 'PendingDelete', w/i 60
-      7: 'PendingTransfer',
-      8: 'PendingUpdate',
-      9: 'PendingRenewal',
-    */
-    const query = await env.DB.prepare(`SELECT * FROM domains WHERE expires_at < ?1`).bind((new Date).getTime()).all();
+    const query = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE expires_at < ?1`).bind((new Date).getTime()).all();
     const expiredDomains = query.results;
     // Delete NS Servers
     for (const domain of expiredDomains) {
       try {
-        await deleteNsRecord(env, domain.name);
+        await deleteNsRecord(env, domain.domain);
       } catch (e) {
         console.error(e);
         // @todo: log failed domains
@@ -93,29 +82,32 @@ export default {
   },
 
   async fetch(
-    request: Request,
-    env: Env,
-    ctx: any
+    request,
+    env,
+    ctx
   ) {
-    const url = new URL(request.url);
-    const parsed = new URL(env.APP_URL);
-    if (url.protocol != parsed.protocol || url.hostname != parsed.hostname) {
-      const target = 'https://' + parsed.hostname + url.pathname + url.search + url.hash;
-      return new Response(`Redirecting to <a href="${target}">${target}</a>`, {
-        status: 301,
-        headers: {
-          'Location': target,
-        },
-      });
-    }
-
-    const pathname = url.pathname;
     const headers = new Headers();
     headers.set('content-type', 'text/html');
 
+    const url = new URL(request.url);
+    const parsed = new URL(env.APP_URL);
+    if (parsed.APP_ENV === 'production') {
+      if (url.protocol != parsed.protocol || url.hostname != parsed.hostname) {
+        const target = 'https://' + parsed.hostname + url.pathname + url.search + url.hash;
+        return new Response(`Redirecting to <a href="${target}">${target}</a>`, {
+          status: 301,
+          headers: {
+            'Location': target,
+          },
+        });
+      }
+    }
+
+    const pathname = url.pathname;
+
     if (pathname.startsWith('/deposit-callback/')) {
       const epusdt = new Epusdt(env.EPUSDT_API_URL, env.EPUSDT_API_KEY);
-      return await epusdt.notify(request, async (/** @type {Request} */request) => {
+      return await epusdt.notify(request, async (request) => {
         const post = await readRequestBody(request);
         if (post.status != 2) {
           return new Response('Request not paid', {headers,});
@@ -187,7 +179,7 @@ export default {
       }
       // session.user_id
       // query user from users table
-      const user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(session.user_id).first();
+      const user = <User> await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(session.user_id).first();
       if (!user) {
         return new Response(
           `
@@ -218,8 +210,8 @@ export default {
           const search = (post.search || '').trim();
           const start = (page - 1) * page_size;
 
-          const total = await env.DB.prepare(`SELECT count(*) AS total FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``}`).bind(user.id).first('total');
-          const all = await env.DB.prepare(`SELECT * FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``} ORDER BY ${sort} ${order} LIMIT ?2, ?3`).bind(user.id, start, page_size).all();
+          const total = <number> await env.DB.prepare(`SELECT count(*) AS total FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``}`).bind(user.id).first('total');
+          const all = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``} ORDER BY ${sort} ${order} LIMIT ?2, ?3`).bind(user.id, start, page_size).all();
           const list = all.results.map(domain => {
             domain.ns_servers = domain.ns_servers ? JSON.parse(domain.ns_servers) : domain.ns_servers;
             delete(domain.user_id);
@@ -383,7 +375,7 @@ export default {
           }
 
 
-          let userRegistered = await env.DB.prepare(`SELECT count(id) AS total FROM domains WHERE user_id=?1`).bind(user.id).first('total');
+          let userRegistered = <number> await env.DB.prepare(`SELECT count(id) AS total FROM domains WHERE user_id=?1`).bind(user.id).first('total');
           if (user.credit < 0.99 * (userRegistered + domains.length - 1)) {
             return Response.json({
               success: false,
@@ -391,7 +383,7 @@ export default {
             })
           }
 
-          let res = await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).first();
+          let res = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).first();
           if (res) {
             return Response.json({
               success: false,
@@ -416,7 +408,7 @@ export default {
               if (userRegistered != 0) {
                 expiration = (new Date).getTime() + 86400 * 1000 * 365;
               }
-              const { count, duration } = <{ count: number, duration: number, }> (await env.DB.prepare(`INSERT INTO domains (id, user_id, domain, status, ns_servers, expires_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`).bind(domain_id, user.id, domain, 1, JSON.stringify(dnsServers), expiration, (new Date).getTime(), null).run()).meta;
+              const { count, duration } = (await env.DB.prepare(`INSERT INTO domains (id, user_id, domain, status, ns_servers, expires_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`).bind(domain_id, user.id, domain, 1, JSON.stringify(dnsServers), expiration, (new Date).getTime(), null).run()).meta;
               if (!duration) {
                 // await txn.rollback();
                 return Response.json({
@@ -445,7 +437,7 @@ export default {
           //   });
           // }
           if (domain) {
-            let res = await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`).bind(domain).first();
+            let res = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`).bind(domain).first();
             if (res) {
               return new Response('Domain is already registered', {
                 headers,
@@ -529,7 +521,7 @@ export default {
             }
           }
 
-          const allDomainsQuery = await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).all();
+          const allDomainsQuery = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).all();
           const allDomains = allDomainsQuery.results;
           let notRegistered = [];
           if (!allDomains.length || allDomains.length !== domains.length) {
@@ -542,11 +534,11 @@ export default {
 
           for (const domain of allDomains) {
             // Domains status is Redemption, PendingDelete or PendingRenewal
-            if ([5, 6, 9].includes(parseInt(domain.status))) {
-              const dnsServers = JSON.parse(domain.dnsServers);
+            if ([5, 6, 9].includes(parseInt(<any> domain.status))) {
+              const dnsServers = JSON.parse(domain.ns_servers);
               if (dnsServers.length) {
-                await deleteNsRecord(env, domain.replace(/\.com\.mp$/, ''));
-                const created = await createNsRecord(env, domain.replace(/\.com\.mp$/, ''), dnsServers);
+                await deleteNsRecord(env, domain.domain.replace(/\.com\.mp$/, ''));
+                const created = await createNsRecord(env, domain.domain.replace(/\.com\.mp$/, ''), dnsServers);
               }
             }
             let expiration = Number(domain.expires_at) + 86400 * 1000 * Number(period);
@@ -573,7 +565,7 @@ export default {
             }
 
             // await env.DB.transaction(async (txn) => {
-              const { count, duration } = <{ count: number, duration: number, }> (await env.DB.prepare(`UPDATE domains SET expires_at=?2, updated_at=?3 WHERE id=?1`).bind(domain.id, expiration, (new Date).getTime()).run()).meta;
+              const { count, duration } = (await env.DB.prepare(`UPDATE domains SET expires_at=?2, updated_at=?3 WHERE id=?1`).bind(domain.id, expiration, (new Date).getTime()).run()).meta;
               if (!duration) {
                 // await txn.rollback();
                 return Response.json({
@@ -627,7 +619,7 @@ export default {
           });
         }
 
-        const domainInfo = await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
+        const domainInfo = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
         if (!domainInfo) {
           return Response.json({
             success: false,
@@ -658,7 +650,7 @@ export default {
         await deleteNsRecord(env, domain.replace(/\.com\.mp$/, ''));
         await createNsRecord(env, domain.replace(/\.com\.mp$/, ''), dnsServers);
 
-        const { count, duration } = <{ count: number, duration: number, }> (await env.DB.prepare(`UPDATE domains SET ns_servers=?2, updated_at=?3 WHERE id=?1`).bind(domainInfo.id, JSON.stringify(dnsServers), (new Date).getTime()).run()).meta;
+        const { count, duration } = (await env.DB.prepare(`UPDATE domains SET ns_servers=?2, updated_at=?3 WHERE id=?1`).bind(domainInfo.id, JSON.stringify(dnsServers), (new Date).getTime()).run()).meta;
         if (!duration) {
           return Response.json({
             success: false,
@@ -677,7 +669,7 @@ export default {
       }
 
       for (const key in user) {
-        let value = user[key];
+        let value = <any> user[key];
         if (key === 'credit') {
           value = value.toFixed(2);
         }
@@ -716,7 +708,7 @@ export default {
 
       // do register db insert
       const user_id = uuid();
-      const { count, duration } = <{ count: number, duration: number, }> (await env.DB.prepare(`INSERT INTO users (id, email, mfa_secret, credit, total_spent, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(user_id, email.toLowerCase(), secret, 0, 0, signupTime).run()).meta;
+      const { count, duration } = (await env.DB.prepare(`INSERT INTO users (id, email, mfa_secret, credit, total_spent, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(user_id, email.toLowerCase(), secret, 0, 0, signupTime).run()).meta;
       if (!duration) {
         return Response.json({
           success: false,
@@ -731,7 +723,7 @@ export default {
       if (request.method === 'POST') {
         const post = <{action: 'check' | 'login' | 'register'; email: string; token: string; secret: string;}> await readRequestBody(request);
         if (post.action === 'check') {
-          const user = await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
+          const user = <User> await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
             .bind(post.email)
             .first();
 
@@ -819,7 +811,7 @@ export default {
               post.email.toLowerCase(),
               'Activate your registry.com.mp account',
               emailActivationTpl.replace(/\%\%EMAIL\%\%/g, post.email).replace(/\%\%ACTIVATION_LINK\%\%/g, activation_link),
-              env.BREVO_API_KEY
+              env
             );
 
             return Response.json({
@@ -848,7 +840,7 @@ export default {
           }
 
           const token = post.token;
-          const user = await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
+          const user = <User> await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
             .bind(post.email.toLowerCase())
             .first();
 
@@ -955,7 +947,7 @@ export default {
           });
         }
 
-        const domainExists = await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`)
+        const domainExists = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`)
           .bind(domain)
           .first();
   

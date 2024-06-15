@@ -43,13 +43,13 @@ class Epusdt {
                 body: JSON.stringify(parameter)
             });
 
-            const resData = await response.json();
+            const resp = <{status: Number; status_code: Number; message: string; data: any;}> await response.json();
 
-            if (response.status !== 200 || resData.status_code !== 200) {
-                throw new Error(resData.message);
+            if (response.status !== 200 || resp.status_code !== 200) {
+                throw new Error(resp.message);
             }
 
-            return resData.data;
+            return resp.data;
         } catch (error) {
             throw new Error(`HTTP error: ${error.message}`);
         }
@@ -67,7 +67,7 @@ class Epusdt {
     }
 
     async notify(request: Request, callback: (request: Request) => any): Promise<string> {
-        const json = await request.clone().json();
+        const json = <any> await request.clone().json();
         const assertSignature = await this.sign(json, this.signKey);
         const realSignature = json.signature;
 

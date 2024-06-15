@@ -1,4 +1,4 @@
-import { Env } from '../Env.ts';
+import { Env } from '../d/Env.ts';
 import readRequestBody from './readRequestBody.ts';
 
 const recaptchaChallange = async function(env: Env, request: Request): Promise<boolean> {
@@ -17,7 +17,7 @@ const recaptchaChallange = async function(env: Env, request: Request): Promise<b
       method: 'POST'
     });
 
-    const outcome = await result.json();
+    const outcome = <{success: boolean;}> await result.json();
     // this is the conditional block that you can customize to fit your specific use-case
     if (outcome.success) {
       return resolve(true);

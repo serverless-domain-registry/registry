@@ -41,7 +41,7 @@ export async function getNsRecord(env: any, subdomain: string): Promise<any[]> {
             `length=500`,
         ].join(`&`),
     })
-    .then(res => res.json())).records;
+    .then(res => <{records: any[]}> <unknown> res.json())).records;
 };
 
 
