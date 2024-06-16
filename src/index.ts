@@ -1076,8 +1076,8 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
   });
 });
 
-router.get('/**', async (request) => {
-  return new Response('404', { headers, });
+router.get('/**', async (request: Request) => {
+  return new Response(`${(new URL(request.url)).pathname} is 404`, { status: 404, headers, });
 });
 
 export default {
