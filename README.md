@@ -2,7 +2,30 @@
 
 An opensource domain-name registry based on cloudflare workers + d1 database + dnspod.com API!
 
-## Installation
+## Nodejs + Yarn Install
+
+```
+yarn
+```
+
+## Install wrangler
+
+https://developers.cloudflare.com/workers/wrangler/install-and-update/
+
+
+## Local development
+
+```
+wrangler d1 execute DB --local --file=migration/table.sql
+```
+
+
+```
+yarn dev
+```
+
+
+## Deploy to production
 
 ### D1 Database
 
@@ -31,7 +54,6 @@ RECAPTCHA_SITE_KEY=""
 
 ### Deploy
 
-install wrangler: https://developers.cloudflare.com/workers/wrangler/install-and-update/,
 
 and bash execute 
 ```

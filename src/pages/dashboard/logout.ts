@@ -1,5 +1,7 @@
-export default async (request: Request, db: D1Database, session_id: string) => {
-  await db.prepare(`DELETE FROM sessions WHERE id=?`).bind(session_id).run();
+export default async (request: Request, db: D1Database, session_id: string | false) => {
+  if (session_id) {
+    await db.prepare(`DELETE FROM sessions WHERE id=?`).bind(session_id).run();
+  }
 
   return new Response(
     `<script>location.href = '/login';</script>`,
