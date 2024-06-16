@@ -3,7 +3,7 @@ import { Env } from './d/Env.ts';
 import { generateSecret, validateTotp } from './lib/totp.ts';
 import { bufferToHex, decryptData, encryptData, hexToBuffer, } from './lib/aes.ts';
 import { createNsRecord, deleteNsRecord } from './lib/dnspod.ts';
-import { Domain, User } from './d/Models';
+import { Domain, DomainRenewPeriodOptions, DomainRenewPeriodOptionsType, DomainStatus, User } from './d/Models';
 import recaptchaChallange from './lib/recaptchaChallange.ts';
 import readRequestBody from './lib/readRequestBody.ts';
 import badwords from './Badwords.ts';
@@ -67,7 +67,7 @@ headers.set('content-type', 'text/html');
 const get_session_id = (request: Request) => {
   const cookie = request.headers.get('cookie');
   if (!cookie) {
-    return false; 
+    return false;
   }
   const matches = cookie.match(/session_id=([^\;]+)/);
   if (!matches || matches.length === 1 || !matches[1]) {
@@ -86,23 +86,23 @@ const get_user = async (env: Env, session_id: string | false): Promise<false | U
   if (!session) {
     return false;
   }
-  return <User> await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(session.user_id).first();
+  return <User>await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(session.user_id).first();
 }
 
 const router = Router()
 
-router.get('/',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  return new Response(indexTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {headers,});
+router.get('/', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return new Response(indexTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), { headers, });
 });
 
-router.get('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  var query = <{domain?: string;}> await readRequestQuery(request);
+router.get('/whois-lookup', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  var query = <{ domain?: string; }>await readRequestQuery(request);
   return new Response(whoisLookupTpl.replace(/\%\%DOMAIN\%\%/g, query.domain ? query.domain : '').replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), {
     headers,
   });
 });
 
-router.post('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.post('/whois-lookup', async (request: Request, env: Env, ctx: ExecutionContext) => {
   try {
     if (!await recaptchaChallange(env, request)) {
       return Response.json({
@@ -117,7 +117,7 @@ router.post('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionC
     });
   }
 
-  const post = <{domain: string}> await readRequestBody(request);
+  const post = <{ domain: string }>await readRequestBody(request);
   const domain = post.domain.trim().toLowerCase();
 
   if (!domain.endsWith(`.com.mp`)) {
@@ -159,7 +159,7 @@ router.post('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionC
     });
   }
 
-  const domainExists = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`)
+  const domainExists = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`)
     .bind(domain)
     .first();
 
@@ -169,8 +169,8 @@ router.post('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionC
     }
 
     domainExists.contact = domainExists.id.trim() + '@privacy.com.mp';
-    delete(domainExists.id);
-    delete(domainExists.user_id);
+    delete (domainExists.id);
+    delete (domainExists.user_id);
   }
 
   return Response.json({
@@ -182,37 +182,37 @@ router.post('/whois-lookup',  async (request: Request, env: Env, ctx: ExecutionC
   });
 });
 
-router.get('/resources/news', async() => {
+router.get('/resources/news', async () => {
   return new Response(resourcesNewsTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {
     headers,
   });
 });
 
-router.get('/resources/term-of-service', async() => {
+router.get('/resources/term-of-service', async () => {
   return new Response(resourcesTermOfServiceTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {
     headers,
   });
 });
 
-router.get('/resources/privacy', async() => {
+router.get('/resources/privacy', async () => {
   return new Response(resourcesPrivacyTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {
     headers,
   });
 });
 
-router.get('/resources/use-cases', async() => {
+router.get('/resources/use-cases', async () => {
   return new Response(resourcesUseCasesTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {
     headers,
   });
 });
 
-router.get('/resources/registrars', async() => {
+router.get('/resources/registrars', async () => {
   return new Response(resourcesRegistrarsTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl), {
     headers,
   });
 });
 
-router.get('/support/report-abuse', async() => {
+router.get('/support/report-abuse', async () => {
   return new Response(supportReportAbuseTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), {
     headers,
   });
@@ -220,15 +220,15 @@ router.get('/support/report-abuse', async() => {
 
 // @TODO: report abuse process
 
-router.get('/login',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  return new Response(loginTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl), {headers,});
+router.get('/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return new Response(loginTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl), { headers, });
 });
 
-router.post('/login',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const post = <{email: string; token: string; secret: string;}> await readRequestBody(request);
-  const user = <User> await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
-  .bind(post.email)
-  .first();
+router.post('/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
+  const user = <User>await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
+    .bind(post.email)
+    .first();
 
   if (!user) {
     // not registered
@@ -240,13 +240,13 @@ router.post('/login',  async (request: Request, env: Env, ctx: ExecutionContext)
   return Response.redirect(`/login/auth-factor?email=${post.email}`)
 });
 
-router.get('/login/auth-factor',  async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestBody(request);
-  return new Response(loginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), {headers,});
+  return new Response(loginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
-router.post('/login/auth-factor',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const post = <{email: string; token: string; secret: string;}> await readRequestBody(request);
+router.post('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
 
   try {
     if (!await recaptchaChallange(env, request)) {
@@ -263,7 +263,7 @@ router.post('/login/auth-factor',  async (request: Request, env: Env, ctx: Execu
   }
 
   const token = post.token;
-  const user = <User> await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
+  const user = <User>await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
     .bind(post.email.toLowerCase())
     .first();
 
@@ -287,7 +287,7 @@ router.post('/login/auth-factor',  async (request: Request, env: Env, ctx: Execu
       message: 'MFA code is required',
     });
   }
-  
+
   try {
     if (!(await validateTotp(token, secret))) {
       return Response.json({
@@ -306,14 +306,14 @@ router.post('/login/auth-factor',  async (request: Request, env: Env, ctx: Execu
   return await loginSession(request, env.DB, user_id, 'json');
 });
 
-router.get('/register',  async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestBody(request);
   const secret = generateSecret();
-  return new Response(registerTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), {headers, });
+  return new Response(registerTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
-router.post('/register',  async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const post = <{email: string; token: string; secret: string;}> await readRequestBody(request);
+router.post('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
 
   try {
     if (!await recaptchaChallange(env, request)) {
@@ -402,11 +402,11 @@ router.post('/register',  async (request: Request, env: Env, ctx: ExecutionConte
   }
 });
 
-router.get('/register/activation',  async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/register/activation', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const encryptData = new URL(request.url).searchParams.get('data');
   const ivData = new URL(request.url).searchParams.get('sign');
   if (!encryptData || !ivData) {
-    return new Response(`Invalid activation link`, {headers,});
+    return new Response(`Invalid activation link`, { headers, });
   }
   let email: string, expiration: number, signupTime: number, secret: string;
 
@@ -417,11 +417,11 @@ router.get('/register/activation',  async (request: Request, env: Env, ctx: Exec
     signupTime = decrypted.iat;
     secret = decrypted.sec;
   } catch (err) {
-    return new Response(`Invalid activation link: ${err}`, {headers,});
+    return new Response(`Invalid activation link: ${err}`, { headers, });
   }
 
   if (expiration < (new Date).getTime() || await env.DB.prepare(`SELECT * FROM users WHERE mfa_secret=?1 AND created_at=?2`).bind(secret, signupTime).first()) {
-    return new Response(`Link expired`, {headers,});
+    return new Response(`Link expired`, { headers, });
   }
 
   // do register db insert
@@ -442,27 +442,27 @@ router.any('/deposit-callback/*', async (request: Request, env: Env, ctx: Execut
   return await epusdt.notify(request, async (request) => {
     const post = await readRequestBody(request);
     if (post.status != 2) {
-      return new Response('Request not paid', {headers,});
+      return new Response('Request not paid', { headers, });
     }
     if (!post.order_id) {
-      return new Response('Deposit order id [order_id] is required', {headers,});
+      return new Response('Deposit order id [order_id] is required', { headers, });
     }
 
     // await env.DB.transaction(async (txn) => {
-      const deposit = await env.DB.prepare(`SELECT * FROM deposits WHERE id=?`).bind(post.order_id).first();
-      if (!deposit) {
-        // await txn.rollback();
-        return new Response('Deposit order not found', {headers,});
-      }
-      if (deposit.status === 2) {
-        // await txn.rollback();
-        return new Response('Deposit ordder is already paid', {headers,});
-      }
+    const deposit = await env.DB.prepare(`SELECT * FROM deposits WHERE id=?`).bind(post.order_id).first();
+    if (!deposit) {
+      // await txn.rollback();
+      return new Response('Deposit order not found', { headers, });
+    }
+    if (deposit.status === 2) {
+      // await txn.rollback();
+      return new Response('Deposit ordder is already paid', { headers, });
+    }
 
-      await env.DB.prepare(`UPDATE deposits SET paid_at=?1, status=?2 WHERE id=?3`).bind(post.order_id, 1, (new Date).getTime()).run();
-      await env.DB.prepare(`UPDATE users SET credit=credit+${deposit.amount} WHERE id=?1`).bind(deposit.user_id).run();
+    await env.DB.prepare(`UPDATE deposits SET paid_at=?1, status=?2 WHERE id=?3`).bind(post.order_id, 1, (new Date).getTime()).run();
+    await env.DB.prepare(`UPDATE users SET credit=credit+${deposit.amount} WHERE id=?1`).bind(deposit.user_id).run();
 
-      // await txn.commit();
+    // await txn.commit();
     // });
     return true;
   });
@@ -472,7 +472,7 @@ router.get('/dashboard', async (request: Request, env: Env, ctx: ExecutionContex
   let tpl = dashboardTpl;
 
   if (tpl === dashboardTpl) {
-    return new Response(`<script>location.href = '/dashboard/domains';</script>`, {headers,});
+    return new Response(`<script>location.href = '/dashboard/domains';</script>`, { headers, });
   }
 
   const user = await get_user(env, get_session_id(request));
@@ -481,16 +481,16 @@ router.get('/dashboard', async (request: Request, env: Env, ctx: ExecutionContex
       `
           <script>location.href = '/login';</script>
       `, {
-          headers: {
-              'Content-type': 'text/html; charset=utf-8',
-              'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-          },
-      }
-    );  
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
+    );
   }
 
   for (const key in user) {
-    let value = <any> user[key];
+    let value = <any>user[key];
     if (key === 'credit') {
       value = value.toFixed(2);
     }
@@ -510,17 +510,17 @@ router.get('/dashboard/domains', async (request: Request, env: Env, ctx: Executi
       `
           <script>location.href = '/login';</script>
       `, {
-          headers: {
-              'Content-type': 'text/html; charset=utf-8',
-              'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-          },
-      }
-    );  
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
+    );
   }
 
   let tpl = dashboardDomainsTpl;
   for (const key in user) {
-    let value = <any> user[key];
+    let value = <any>user[key];
     if (key === 'credit') {
       value = value.toFixed(2);
     }
@@ -540,11 +540,11 @@ router.post('/dashboard/domains', async (request: Request, env: Env, ctx: Execut
   const search = (post.search || '').trim();
   const start = (page - 1) * page_size;
 
-  const total = <number> await env.DB.prepare(`SELECT count(*) AS total FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``}`).bind(user.id).first('total');
-  const all = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``} ORDER BY ${sort} ${order} LIMIT ?2, ?3`).bind(user.id, start, page_size).all();
+  const total = <number>await env.DB.prepare(`SELECT count(*) AS total FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``}`).bind(user.id).first('total');
+  const all = <D1Result<Domain>>await env.DB.prepare(`SELECT * FROM domains WHERE user_id=?1 ${search.length ? ` AND (domain LIKE "${search}%" OR domain LIKE "%${search}%")` : ``} ORDER BY ${sort} ${order} LIMIT ?2, ?3`).bind(user.id, start, page_size).all();
   const list = all.results.map(domain => {
     domain.ns_servers = domain.ns_servers ? JSON.parse(domain.ns_servers) : domain.ns_servers;
-    delete(domain.user_id);
+    delete (domain.user_id);
     return domain;
   });
 
@@ -578,16 +578,16 @@ router.get('/dashboard/balance', async (request: Request, env: Env, ctx: Executi
       `
           <script>location.href = '/login';</script>
       `, {
-          headers: {
-              'Content-type': 'text/html; charset=utf-8',
-              'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-          },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
   let tpl = dashboardCreditTpl;
   for (const key in user) {
-    let value = <any> user[key];
+    let value = <any>user[key];
     if (key === 'credit') {
       value = value.toFixed(2);
     }
@@ -603,15 +603,15 @@ router.post('/dashboard/balance', async (request: Request, env: Env, ctx: Execut
       `
           <script>location.href = '/login';</script>
       `, {
-          headers: {
-              'Content-type': 'text/html; charset=utf-8',
-              'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-          },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
 
-  const post = <{action: 'purchase'; amount: number}> await readRequestBody(request);
+  const post = <{ action: 'purchase'; amount: number }>await readRequestBody(request);
 
   if (post.action != 'purchase') {
     return Response.json({
@@ -631,39 +631,39 @@ router.post('/dashboard/balance', async (request: Request, env: Env, ctx: Execut
   let exchangeRateRes;
 
   // await env.DB.transaction(async (txn) => {
-    const epusdt = new Epusdt(env.EPUSDT_API_URL, env.EPUSDT_API_KEY);
+  const epusdt = new Epusdt(env.EPUSDT_API_URL, env.EPUSDT_API_KEY);
 
-    const id = uuid().replace(/[\w\W]{4}$/, '');
-    await env.DB.prepare(`INSERT INTO deposits (id, user_id, amount, status, created_at) VALUES (?1, ?2, ?3, ?4, ?5)`).bind(id, user.id, post.amount, 0, (new Date).getTime()).run();
-    try {
-      const exchangeRateUrl = `http://api.coinmarketcap.com.mp/data-api/v3/cryptocurrency/detail/chart?id=825&range=1H&convertId=2787`;
-      exchangeRateRes = await fetch(exchangeRateUrl, {
-        method: `GET`,
-        headers: {
-          'User-Agent': `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0`,
-        },
-      });
-      exchangeRate = (<any> Object.values(<any> (<any> (<any> await exchangeRateRes.clone().json()).data).points)).reverse()[0].c[0];
-    } catch (err) {
-      // await txn.rollback();
-      return Response.json({
-        success: false,
-        message: 'Exchange Rate Fetch Exception: ' + err,
-        data: exchangeRateRes ? await exchangeRateRes.clone().text() :null,
-      });
-    }
-    try {
-      json = await epusdt.createTransaction(id, post.amount * exchangeRate, `${env.APP_URL}/deposit-callback/${id}`);
-    } catch (err) {
-      // await txn.rollback();
-      return Response.json({
-        success: false,
-        message: 'Payment Gateway Exception: ' + err,
-      });
-    }
+  const id = uuid().replace(/[\w\W]{4}$/, '');
+  await env.DB.prepare(`INSERT INTO deposits (id, user_id, amount, status, created_at) VALUES (?1, ?2, ?3, ?4, ?5)`).bind(id, user.id, post.amount, 0, (new Date).getTime()).run();
+  try {
+    const exchangeRateUrl = `http://api.coinmarketcap.com.mp/data-api/v3/cryptocurrency/detail/chart?id=825&range=1H&convertId=2787`;
+    exchangeRateRes = await fetch(exchangeRateUrl, {
+      method: `GET`,
+      headers: {
+        'User-Agent': `Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36 Edg/125.0.0.0`,
+      },
+    });
+    exchangeRate = (<any>Object.values(<any>(<any>(<any>await exchangeRateRes.clone().json()).data).points)).reverse()[0].c[0];
+  } catch (err) {
+    // await txn.rollback();
+    return Response.json({
+      success: false,
+      message: 'Exchange Rate Fetch Exception: ' + err,
+      data: exchangeRateRes ? await exchangeRateRes.clone().text() : null,
+    });
+  }
+  try {
+    json = await epusdt.createTransaction(id, post.amount * exchangeRate, `${env.APP_URL}/deposit-callback/${id}`);
+  } catch (err) {
+    // await txn.rollback();
+    return Response.json({
+      success: false,
+      message: 'Payment Gateway Exception: ' + err,
+    });
+  }
 
-    await env.DB.prepare(`UPDATE deposits SET usdt_address=?1, usdt_amount=?2 WHERE id=?3`).bind(json.token, json.actual_amount, id).run();
-    // await txn.commit();
+  await env.DB.prepare(`UPDATE deposits SET usdt_address=?1, usdt_amount=?2 WHERE id=?3`).bind(json.token, json.actual_amount, id).run();
+  // await txn.commit();
   // });
 
   return Response.json({
@@ -682,11 +682,11 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
       `
           <script>location.href = '/login';</script>
       `, {
-          headers: {
-              'Content-type': 'text/html; charset=utf-8',
-              'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-          },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
 
@@ -697,7 +697,7 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
   //   });
   // }
   if (domain) {
-    let res = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`).bind(domain).first();
+    let res = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain=?`).bind(domain).first();
     if (res) {
       return new Response('Domain is already registered', {
         headers,
@@ -707,7 +707,7 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
 
   let tpl = dashboardRegDomainTpl;
   for (const key in user) {
-    let value = <any> user[key];
+    let value = <any>user[key];
     if (key === 'credit') {
       value = value.toFixed(2);
     }
@@ -723,11 +723,11 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
       `
           <script>location.href = '/login';</script>
       `, {
-        headers: {
-            'Content-type': 'text/html; charset=utf-8',
-            'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-        },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
 
@@ -745,7 +745,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
     });
   }
 
-  const post = <{domains: string[]; dnsServers: string[]}> await readRequestBody(request);
+  const post = <{ domains: string[]; dnsServers: string[] }>await readRequestBody(request);
   let domains = post.domains.map(domain => domain.toLowerCase());
   const dnsServers = post.dnsServers.map(domain => domain.toLowerCase());
 
@@ -793,7 +793,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
   }
 
 
-  let userRegistered = <number> await env.DB.prepare(`SELECT count(id) AS total FROM domains WHERE user_id=?1`).bind(user.id).first('total');
+  let userRegistered = <number>await env.DB.prepare(`SELECT count(id) AS total FROM domains WHERE user_id=?1`).bind(user.id).first('total');
   if (user.credit < 0.99 * (userRegistered + domains.length - 1)) {
     return Response.json({
       success: false,
@@ -801,7 +801,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
     })
   }
 
-  let res = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).first();
+  let res = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).first();
   if (res) {
     return Response.json({
       success: false,
@@ -811,35 +811,35 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
 
   for (const domain of domains) {
     // await env.DB.transaction(async (txn) => {
-      if (badwords.includes(domain) || badwords.includes(domain.replace(/\.com\.mp$/, ''))) {
-        // await txn.rollback();
-        return Response.json({
-          success: false,
-          message: `Reserved domain ${domain}`,
-        });
-      }
+    if (badwords.includes(domain) || badwords.includes(domain.replace(/\.com\.mp$/, ''))) {
+      // await txn.rollback();
+      return Response.json({
+        success: false,
+        message: `Reserved domain ${domain}`,
+      });
+    }
 
-      const created = await createNsRecord(env, domain.replace(/\.com\.mp$/, ''), dnsServers)
+    const created = await createNsRecord(env, domain.replace(/\.com\.mp$/, ''), dnsServers)
 
-      const domain_id = uuid();
-      let expiration = (new Date).getTime() + 86400 * 1000 * 90;
-      if (userRegistered != 0) {
-        expiration = (new Date).getTime() + 86400 * 1000 * 365;
-      }
-      const { count, duration } = (await env.DB.prepare(`INSERT INTO domains (id, user_id, domain, status, ns_servers, expires_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`).bind(domain_id, user.id, domain, 1, JSON.stringify(dnsServers), expiration, (new Date).getTime(), null).run()).meta;
-      if (!duration) {
-        // await txn.rollback();
-        return Response.json({
-          success: false,
-          message: `Domain ${domain} insert failed`,
-        });
-      }
+    const domain_id = uuid();
+    let expiration = (new Date).getTime() + 86400 * 1000 * 90;
+    if (userRegistered != 0) {
+      expiration = (new Date).getTime() + 86400 * 1000 * 365;
+    }
+    const { count, duration } = (await env.DB.prepare(`INSERT INTO domains (id, user_id, domain, status, ns_servers, expires_at, created_at, updated_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`).bind(domain_id, user.id, domain, 1, JSON.stringify(dnsServers), expiration, (new Date).getTime(), null).run()).meta;
+    if (!duration) {
+      // await txn.rollback();
+      return Response.json({
+        success: false,
+        message: `Domain ${domain} insert failed`,
+      });
+    }
 
-      if (userRegistered > 0) {
-        await env.DB.prepare(`UPDATE users SET credit=credit-0.99 WHERE id=?`).bind(user.id).run();
-      }
-      userRegistered ++;
-      // await txn.commit();
+    if (userRegistered > 0) {
+      await env.DB.prepare(`UPDATE users SET credit=credit-0.99 WHERE id=?`).bind(user.id).run();
+    }
+    userRegistered++;
+    // await txn.commit();
     // });
   };
 
@@ -856,11 +856,11 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
       `
           <script>location.href = '/login';</script>
       `, {
-        headers: {
-            'Content-type': 'text/html; charset=utf-8',
-            'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-        },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
 
@@ -878,16 +878,16 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     });
   }
 
-  const post = <{domain: string; domains?: string[]; period: 90|365|730|1095 }> await readRequestBody(request);
+  const post = <{ domain: string; domains?: string[]; period: DomainRenewPeriodOptionsType }>await readRequestBody(request);
   let domains: string[] = []
   if (post.domains && post.domains.length) {
     post.domains.map(domain => domain.toLowerCase());
   } else {
     domains = [post.domain.toLowerCase()];
   }
-  const period = <90|365|730|1095> parseInt(<any> post.period);
+  const period = <DomainRenewPeriodOptionsType>parseInt(<any>post.period);
 
-  if (![90, 365, 730, 1095].includes(period)) {
+  if (!DomainRenewPeriodOptions.includes(period)) {
     return Response.json({
       success: false,
       message: `Invalid period ${period}`,
@@ -932,7 +932,7 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     }
   }
 
-  const allDomainsQuery = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).all();
+  const allDomainsQuery = <D1Result<Domain>>await env.DB.prepare(`SELECT * FROM domains WHERE domain IN ` + JSON.stringify(domains).replace(/\[/, '(').replace(/\]/, ')')).all();
   const allDomains = allDomainsQuery.results;
   let notRegistered = [];
   if (!allDomains.length || allDomains.length !== domains.length) {
@@ -945,7 +945,7 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
 
   for (const domain of allDomains) {
     // Domains status is Redemption, PendingDelete or PendingRenewal
-    if ([5, 6, 9].includes(parseInt(<any> domain.status))) {
+    if ([DomainStatus.Redemption, DomainStatus.PendingDelete, DomainStatus.PendingRenewal,].includes(parseInt(<any>domain.status))) {
       const dnsServers = JSON.parse(domain.ns_servers);
       if (dnsServers.length) {
         await deleteNsRecord(env, domain.domain.replace(/\.com\.mp$/, ''));
@@ -976,19 +976,19 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     }
 
     // await env.DB.transaction(async (txn) => {
-      const { count, duration } = (await env.DB.prepare(`UPDATE domains SET expires_at=?2, updated_at=?3 WHERE id=?1`).bind(domain.id, expiration, (new Date).getTime()).run()).meta;
-      if (!duration) {
-        // await txn.rollback();
-        return Response.json({
-          success: false,
-          message: `Domain ${domain} renew failed`,
-        });
-      }
+    const { count, duration } = (await env.DB.prepare(`UPDATE domains SET expires_at=?2, updated_at=?3 WHERE id=?1`).bind(domain.id, expiration, (new Date).getTime()).run()).meta;
+    if (!duration) {
+      // await txn.rollback();
+      return Response.json({
+        success: false,
+        message: `Domain ${domain} renew failed`,
+      });
+    }
 
-      if (price > 0) {
-        await env.DB.prepare(`UPDATE users SET credit=credit-${price} WHERE id=?`).bind(user.id).run();
-      }
-      // await txn.commit();
+    if (price > 0) {
+      await env.DB.prepare(`UPDATE users SET credit=credit-${price} WHERE id=?`).bind(user.id).run();
+    }
+    // await txn.commit();
     // });
   };
 
@@ -1012,15 +1012,15 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
       `
           <script>location.href = '/login';</script>
       `, {
-        headers: {
-            'Content-type': 'text/html; charset=utf-8',
-            'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
-        },
-      }
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
     );
   }
 
-  const post = <{domain: string; dns_servers?: string[];}> await readRequestBody(request);
+  const post = <{ domain: string; dns_servers?: string[]; }>await readRequestBody(request);
   const domain = post.domain;
   const dnsServers = post.dns_servers && post.dns_servers.length ? post.dns_servers.map(dnsServer => dnsServer.toLowerCase()) : [];
 
@@ -1031,7 +1031,7 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
     });
   }
 
-  const domainInfo = <Domain> await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
+  const domainInfo = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
   if (!domainInfo) {
     return Response.json({
       success: false,
@@ -1045,13 +1045,13 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
     });
   }
 
-  if (domainInfo.status != 1) {
+  if (domainInfo.status != DomainStatus.OK) {
     return Response.json({
       success: false,
       message: `Domain ${domain}'s status is not active`,
     });
   }
-  const oldDnsServers = domainInfo.ns_servers ? (<string[]> JSON.parse(domainInfo.ns_servers)) : [];
+  const oldDnsServers = domainInfo.ns_servers ? (<string[]>JSON.parse(domainInfo.ns_servers)) : [];
   if (JSON.stringify(dnsServers.sort()) === JSON.stringify(oldDnsServers.sort())) {
     return Response.json({
       success: false,
@@ -1077,13 +1077,13 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
 });
 
 router.get('/**', async (request) => {
-	return new Response('404', {headers,});
+  return new Response('404', { headers, });
 });
 
 export default {
   async scheduled(controller, env, ctx) {
     console.log("Update expiration");
-    const query = <D1Result<Domain>> await env.DB.prepare(`SELECT * FROM domains WHERE expires_at < ?1`).bind((new Date).getTime()).all();
+    const query = <D1Result<Domain>>await env.DB.prepare(`SELECT * FROM domains WHERE expires_at < ?1`).bind((new Date).getTime()).all();
     const expiredDomains = query.results;
     // Delete NS Servers
     for (const domain of expiredDomains) {
