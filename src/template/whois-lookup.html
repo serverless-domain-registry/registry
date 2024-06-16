@@ -168,6 +168,9 @@
                 document.querySelector('#btnCheck').innerHTML = 'Look Up';
             });
             return false;
+        }, function () {
+            document.querySelector('#btnCheck').removeAttribute('disabled');
+            document.querySelector('#btnCheck').innerHTML = 'Look Up';
         });
 
         return false;

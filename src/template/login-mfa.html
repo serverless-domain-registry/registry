@@ -35,46 +35,49 @@
             document.querySelector('#btnSubmit').innerHTML = 'Pending...';
             document.querySelector('#btnSubmit').setAttribute('disabled', true);
             fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: form.elements['action'].value,
-                        email: form.elements['email'].value,
-                        token: form.elements['token'].value,
-                        'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
-                    }),
-                }).then(function (res) {
-                    return res.json()
-                }).then(function (json) {
-                    if (json.success) {
-                        location.href = '/dashboard';
-                        document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
-                        return;
-                    }
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    action: form.elements['action'].value,
+                    email: form.elements['email'].value,
+                    token: form.elements['token'].value,
+                    'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
+                }),
+            }).then(function (res) {
+                return res.json()
+            }).then(function (json) {
+                if (json.success) {
+                    location.href = '/dashboard';
+                    document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
+                    return;
+                }
 
-                    var tk = document.querySelector('#mfaField');
-                    var popover = new bootstrap.Popover(tk, {
-                        toggle: "popover",
-                        title: "Error",
-                        content: json.message,
-                        trigger: "custom",
-                        placement: window.innerWidth < 850 ? 'top' : "right",
-                        html: true,
-                    });
-                    setTimeout(function () {
-                        document.querySelector('#mfaField').focus();
-                        popover.show();
-                    }, 300);
-
-                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
-                    document.querySelector('#btnSubmit').removeAttribute('disabled');
-                }).catch(function () {
-                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
-                    document.querySelector('#btnSubmit').removeAttribute('disabled');
+                var tk = document.querySelector('#mfaField');
+                var popover = new bootstrap.Popover(tk, {
+                    toggle: "popover",
+                    title: "Error",
+                    content: json.message,
+                    trigger: "custom",
+                    placement: window.innerWidth < 850 ? 'top' : "right",
+                    html: true,
                 });
+                setTimeout(function () {
+                    document.querySelector('#mfaField').focus();
+                    popover.show();
+                }, 300);
+
+                document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                document.querySelector('#btnSubmit').removeAttribute('disabled');
+            }).catch(function () {
+                document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                document.querySelector('#btnSubmit').removeAttribute('disabled');
+            });
+        }, function () {
+            document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+            document.querySelector('#btnSubmit').removeAttribute('disabled');
         });
         return false;
     };

@@ -137,6 +137,9 @@
                     document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
                 });
             }, 500);
+        }, function () {
+            document.querySelector('#btn-submit').removeAttribute('disabled')
+            document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
         });
 
         return false;
