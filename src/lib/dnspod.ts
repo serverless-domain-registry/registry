@@ -1,6 +1,12 @@
+import { Env } from "../d/Env";
+
 const apiBase = `https://api.dnspod.com`
 
-export async function createNsRecord(env: any, subdomain: string, dnsservers: string[]): Promise<boolean> {
+export async function createNsRecord(env: Env, subdomain: string, dnsservers: string[]): Promise<boolean> {
+    if (env.APP_ENV != 'production') {
+        return true;
+    }
+
     const url = `${apiBase}/Record.Create`;
 
     dnsservers.forEach(async (dnsserver, index) => {
@@ -25,7 +31,7 @@ export async function createNsRecord(env: any, subdomain: string, dnsservers: st
     return true;
 };
 
-export async function getNsRecord(env: any, subdomain: string): Promise<any[]> {
+export async function getNsRecord(env: Env, subdomain: string): Promise<any[]> {
     const url = `${apiBase}/Record.List`
     return (await fetch(url, {
         method: 'POST',
@@ -45,7 +51,11 @@ export async function getNsRecord(env: any, subdomain: string): Promise<any[]> {
 };
 
 
-export async function deleteNsRecord(env: any, subdomain: string) {
+export async function deleteNsRecord(env: Env, subdomain: string) {
+    if (env.APP_ENV != 'production') {
+        return true;
+    }
+
     const records = await getNsRecord(env, subdomain);
     records.forEach(async (record: any) => {
         const url = `${apiBase}/Record.Remove`;
@@ -64,7 +74,7 @@ export async function deleteNsRecord(env: any, subdomain: string) {
     })
 };
 
-export async function updateNsRecord(env: any, subdomain: string, dnsservers: string[]) {
+export async function updateNsRecord(env: Env, subdomain: string, dnsservers: string[]) {
     await deleteNsRecord(env, subdomain);
     return await createNsRecord(env, subdomain, dnsservers);
 };
