@@ -234,14 +234,14 @@ router.post('/login', async (request: Request, env: Env, ctx: ExecutionContext) 
     // not registered
     const secret = generateSecret();
     var tpl = registerTpl;
-    return Response.redirect(`/register?email=${post.email}`);
+    return Response.redirect(`${(new URL(request.url)).origin}/register?email=${post.email}`);
   }
 
-  return Response.redirect(`/login/auth-factor?email=${post.email}`)
+  return Response.redirect(`${(new URL(request.url)).origin}/login/auth-factor?email=${post.email}`)
 });
 
 router.get('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const get = await readRequestBody(request);
+  const get = await readRequestQuery(request);
   return new Response(loginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
@@ -307,7 +307,7 @@ router.post('/login/auth-factor', async (request: Request, env: Env, ctx: Execut
 });
 
 router.get('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const get = await readRequestBody(request);
+  const get = await readRequestQuery(request);
   const secret = generateSecret();
   return new Response(registerTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
