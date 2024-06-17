@@ -234,14 +234,17 @@ router.post('/login', async (request: Request, env: Env, ctx: ExecutionContext) 
     // not registered
     const secret = generateSecret();
     var tpl = registerTpl;
-    return Response.redirect(`${(new URL(request.url)).origin}/register?email=${post.email}`);
+    return Response.redirect(`${(new URL(request.url)).origin}/register?email=${encodeURIComponent(post.email)}`);
   }
 
-  return Response.redirect(`${(new URL(request.url)).origin}/login/auth-factor?email=${post.email}`)
+  return Response.redirect(`${(new URL(request.url)).origin}/login/auth-factor?email=${encodeURIComponent(post.email)}`)
 });
 
 router.get('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestQuery(request);
+  if (!get.email) {
+    return Response.redirect(`${(new URL(request.url)).origin}/login`);
+  }
   return new Response(loginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
@@ -281,7 +284,9 @@ router.post('/login/auth-factor', async (request: Request, env: Env, ctx: Execut
       success: false,
       message: 'MFA is not enabled for this account',
     });
-  } else if (!token) {
+  }
+
+  if (!token) {
     return Response.json({
       success: false,
       message: 'MFA code is required',
@@ -308,6 +313,9 @@ router.post('/login/auth-factor', async (request: Request, env: Env, ctx: Execut
 
 router.get('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestQuery(request);
+  if (!get.email) {
+    return Response.redirect(`${(new URL(request.url)).origin}/login`);
+  }
   const secret = generateSecret();
   return new Response(registerTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
@@ -499,7 +507,7 @@ router.get('/dashboard', async (request: Request, env: Env, ctx: ExecutionContex
   return new Response(tpl.replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
-router.any('/dashboard/logout', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/dashboard/logout', async (request: Request, env: Env, ctx: ExecutionContext) => {
   return await logout(request, env.DB, get_session_id(request));
 });
 
@@ -530,6 +538,20 @@ router.get('/dashboard/domains', async (request: Request, env: Env, ctx: Executi
 });
 
 router.post('/dashboard/domains', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const user = await get_user(env, get_session_id(request));
+  if (!user) {
+    return new Response(
+      `
+          <script>location.href = '/login';</script>
+      `, {
+      headers: {
+        'Content-type': 'text/html; charset=utf-8',
+        'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+      },
+    }
+    );
+  }
+
   // list data with pagniate
   const post = await readRequestBody(request);
 

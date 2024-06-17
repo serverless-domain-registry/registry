@@ -1,7 +1,6 @@
 %%HEADER%%
 
-<form method="POST" action="/login" onsubmit="return window.doLogin(this);">
-    <input type="hidden" name="action" value="login">
+<form method="POST" action="/login/auth-factor" onsubmit="return window.doLogin(this);">
     <input type="hidden" name="g-recaptcha-response" id="login_form_hidden_cf_response" value="">
 
     <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
@@ -34,14 +33,13 @@
             document.querySelector('#login_form_hidden_cf_response').value = challengeResponse;
             document.querySelector('#btnSubmit').innerHTML = 'Pending...';
             document.querySelector('#btnSubmit').setAttribute('disabled', true);
-            fetch('/login', {
+            fetch(form.action, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
                 body: JSON.stringify({
-                    action: form.elements['action'].value,
                     email: form.elements['email'].value,
                     token: form.elements['token'].value,
                     'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
@@ -66,6 +64,9 @@
                     html: true,
                 });
                 setTimeout(function () {
+                    if (json.message == 'MFA code is invalid') {
+                        document.querySelector('#mfaField').value = '';
+                    }
                     document.querySelector('#mfaField').focus();
                     popover.show();
                 }, 300);

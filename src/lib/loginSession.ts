@@ -11,7 +11,7 @@ const loginSession = async (request, db, user_id, type: string | 'json') => {
       session_id = matches[1];
     }
   }
-  const expires_at = (new Date((new Date).getTime() + 86400 * 31 * 1000)).toUTCString();
+  const expires_at = (new Date((new Date).getTime() + 86400 * 31 * 1000)).getTime();
   const session = await db.prepare(`SELECT * FROM sessions WHERE id=?`).bind(session_id).first();
   if (!session) {
     const { count, duration } = <{ count: number, duration: number, }> (await db.prepare(`INSERT INTO sessions (id, user_id, expires_at) VALUES (?1, ?2, ?3)`).bind(session_id, user_id, expires_at).run()).meta;

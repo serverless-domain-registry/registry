@@ -404,7 +404,7 @@
     </main>
 
     <div class="modal fade" id="modalRefreshing" tabindex="-1" aria-labelledby="modalRefreshingLabel" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 235px; margin: auto;">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 235px; margin: auto;">
             <div class="modal-content" style="outline: 9999px solid rgba(0, 0, 0, 0.5); border: 0;">
                 <div class="modal-body text-center">
                     <span class="hurricane-regular" style="font-size: 20px;font-weight: bold;display: block;width: 80px;height: 30px;margin: -5px auto;">Com.Mp</span>
@@ -414,7 +414,7 @@
     </div>      
 
     <div class="modal fade" id="modalRenew" tabindex="-1" aria-labelledby="modalRenewLabel" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 335px;">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 335px;">
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="modalRenewLabel">Renew domain</h1>
@@ -445,7 +445,7 @@
     </div>
 
     <div class="modal fade" id="modalUpdateDns" tabindex="-1" aria-labelledby="modalUpdateDnsLabel" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-sm modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto">
           <div class="modal-content">
             <div class="modal-header">
               <h1 class="modal-title fs-5" id="modalUpdateDnsLabel">Update DNS</h1>
@@ -476,18 +476,21 @@
     %%RECAPTCHA%%
 
     <script>
-        window.modalRenewDom = document.getElementById('modalRenew');
+        $ = function (a) {
+            return document.querySelector(a);
+        };
+        window.modalRenewDom = $('#modalRenew');
         window.modalRenew = new bootstrap.Modal(window.modalRenewDom, {})
         window.modalRenewDom.addEventListener('shown.bs.modal', function (event) {
-            document.querySelector('#periodInput').focus();
+            $('#periodInput').focus();
         });
-        window.modalUpdateDnsDom = document.getElementById('modalUpdateDns');
+        window.modalUpdateDnsDom = $('#modalUpdateDns');
         window.modalUpdateDns = new bootstrap.Modal(window.modalUpdateDnsDom, {})
         window.modalUpdateDnsDom.addEventListener('shown.bs.modal', function (event) {
-            document.querySelector('#updateDnsDialog-nsServersInput').focus();
-            document.querySelector('#updateDnsDialog-nsServersInput').select();
+            $('#updateDnsDialog-nsServersInput').focus();
+            $('#updateDnsDialog-nsServersInput').select();
         });
-        window.modalRefreshing = new bootstrap.Modal(document.getElementById('modalRefreshing'), {})
+        window.modalRefreshing = new bootstrap.Modal($('#modalRefreshing'), {})
 
         window.url = location.href;
         window.page = (new URL(url)).searchParams.get('page') || 1;
@@ -497,7 +500,7 @@
         window.order = (new URL(url)).searchParams.get('order') || 'ASC';
 
         window.loadPage = function (page, page_size, search, sort, order) {
-            window.modalRefreshing.show();
+            // window.modalRefreshing.show();
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -511,7 +514,9 @@
                     order: order
                 })
             }).then(function (response) {return response.json();}).then(function (json) {
+                console.log('then');
                 window.modalRefreshing.hide();
+                console.log(window.modalRefreshing);
                 const list = json.data.list;
                 document.querySelector('#domain-list').innerHTML = [...list].map(function (item) {
                     return `<div class="d-md-flex d-lg-flex text-body-secondary pt-3 border-bottom">
@@ -617,8 +622,10 @@
                 window.page_size = json.data.paginate.page_size;
                 history.pushState({}, '', `?page=${json.data.paginate.page}&page_size=${json.data.paginate.page_size}&search=${json.data.search}&sort=${json.data.sort}&order=${json.data.order}`);
             }).catch(function (err) {
+                console.log('catch');
                 window.modalRefreshing.hide();
             }).finally(function () {
+                console.log('finally');
                 window.modalRefreshing.hide();
             });
         };
@@ -650,7 +657,7 @@
             document.querySelector('#btn-submit').innerHTML = 'Proceeding...';
             document.querySelector('#btn-submit').setAttribute('disabled', true);
 
-            window.captchaChallenge('domain-manage', function (challengeResponse, modalCaptcha) {
+            window.captchaChallenge('domain_renew', function (challengeResponse, modalCaptcha) {
                 document.querySelector('#renew_form_hidden_cf_response').value = challengeResponse;
 
                 var domain = form.elements['domain'].value;
