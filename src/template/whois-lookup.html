@@ -111,7 +111,7 @@
             document.querySelector('#domainField').value = document.querySelector('#domainField').value.trim() + '.com.mp';
         }
         document.querySelector('#whoisInfo').style.display = 'none';
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge('whois_lookup', function (challengeResponse, modalCaptcha) {
             document.querySelector('#whois_form_hidden_cf_response').value = challengeResponse;
 
             document.querySelector('#btnCheck').setAttribute('disabled', 'disabled');
@@ -132,6 +132,7 @@
                 },
                 body: JSON.stringify(data)
             }).then((res) => res.json()).then((json) => {
+                modalCaptcha.hide();
                 if (!json.success) {
                     document.querySelector('#errTip').innerHTML = json.message;
                     return;
@@ -169,6 +170,7 @@
             });
             return false;
         }, function () {
+            modalCaptcha.hide();
             document.querySelector('#btnCheck').removeAttribute('disabled');
             document.querySelector('#btnCheck').innerHTML = 'Look Up';
         });
@@ -181,7 +183,8 @@
     };
 
     window.contactSend = function () {
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge(function (challengeResponse, modalCaptcha) {
+            modalCaptcha.hide();
             document.querySelector('#contact_form_hidden_cf_response').value = challengeResponse;
             window.modalError.show();
         });

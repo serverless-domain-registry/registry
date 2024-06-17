@@ -30,7 +30,7 @@
         document.querySelector('#btnSubmit').innerHTML = 'Pending...';
         document.querySelector('#btnSubmit').setAttribute('disabled', true);
 
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge('login', function (challengeResponse, modalCaptcha) {
             document.querySelector('#login_form_hidden_cf_response').value = challengeResponse;
             document.querySelector('#btnSubmit').innerHTML = 'Pending...';
             document.querySelector('#btnSubmit').setAttribute('disabled', true);
@@ -49,6 +49,7 @@
             }).then(function (res) {
                 return res.json()
             }).then(function (json) {
+                modalCaptcha.hide();
                 if (json.success) {
                     location.href = '/dashboard';
                     document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
@@ -76,6 +77,7 @@
                 document.querySelector('#btnSubmit').removeAttribute('disabled');
             });
         }, function () {
+            modalCaptcha.hide();
             document.querySelector('#btnSubmit').innerHTML = 'Sign in';
             document.querySelector('#btnSubmit').removeAttribute('disabled');
         });

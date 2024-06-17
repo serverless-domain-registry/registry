@@ -650,7 +650,7 @@
             document.querySelector('#btn-submit').innerHTML = 'Proceeding...';
             document.querySelector('#btn-submit').setAttribute('disabled', true);
 
-            window.captchaChallenge(function (challengeResponse) {
+            window.captchaChallenge('domain-manage', function (challengeResponse, modalCaptcha) {
                 document.querySelector('#renew_form_hidden_cf_response').value = challengeResponse;
 
                 var domain = form.elements['domain'].value;
@@ -668,6 +668,7 @@
                 })
                 .then(function (res) { return res.json()})
                 .then(function (json) {
+                    modalCaptcha.hide();
                     if (!json.success) {
                         return bootstrapToastr({
                             title: 'Fail!',
@@ -685,6 +686,7 @@
                         duraction: 5000
                     });
                 }).finally(function () {
+                    modalCaptcha.hide();
                     document.querySelector('#btn-submit').innerHTML = 'Submit';
                     document.querySelector('#btn-submit').removeAttribute('disabled');
                 });

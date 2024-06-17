@@ -27,16 +27,16 @@
     backdrop: false,
   })
 
-  window.captchaChallenge = function (resolve, reject) {
+  window.captchaChallenge = function (action, resolve, reject) {
     window.modalCaptcha.show();
     setTimeout(function () {
       window.modalCaptcha.hide();
     }, 800);
     grecaptcha.ready(function () {
       try {
-        grecaptcha.execute('%%SITE_KEY%%', { action: 'submit' }).then(function (challengeResponse) {
-          window.modalCaptcha.hide();
-          resolve(challengeResponse);
+        grecaptcha.execute('%%SITE_KEY%%', { action: action }).then(function (challengeResponse) {
+          // window.modalCaptcha.hide();
+          resolve(challengeResponse, window.modalCaptcha);
         });
       } catch (error) {
         bootstrapToastr({

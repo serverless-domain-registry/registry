@@ -308,7 +308,7 @@ ns2.server.com
       for (var i = 0; i < domains.length; ++i) {
         var domain = domains[i];
         (function (domain) {
-          window.captchaChallenge(function (challengeResponse) {
+          window.captchaChallenge('domain-reg', function (challengeResponse, modalCaptcha) {
             fetch(location.href, {
               method: 'POST',
               headers: {
@@ -322,6 +322,7 @@ ns2.server.com
             }).then(function (response) {
               return response.json();
             }).then(function (data) {
+              modalCaptcha.hide();
               if (!data.success) {
                 return bootstrapToastr({
                   title: "Error",
@@ -329,14 +330,15 @@ ns2.server.com
                   duraction: 5000
                 });
               }
-              document.getElementById('domainsField').value = '';
-              document.getElementById('dnsServersField').value = '';
+              // document.getElementById('domainsField').value = '';
+              // document.getElementById('dnsServersField').value = '';
               bootstrapToastr({
                 title: "Success",
                 message: domain + ': registered successfully!',
                 duraction: 5000
               });
             }).finally(() => {
+              modalCaptcha.hide();
               document.getElementById('submitBtn').innerHTML = 'Submit';
               document.getElementById('submitBtn').disabled = false;
             });

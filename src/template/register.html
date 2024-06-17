@@ -2,8 +2,7 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PeytonRG/BootstrapToaster@4.1.2/css/bootstrap-toaster.min.css">
 
-<form method="POST" action="/login" onsubmit="return window.register(this);">
-    <input type="hidden" name="action" value="register">
+<form method="POST" action="/register" onsubmit="return window.register(this);">
     <input type="hidden" name="secret" value="%%SECRET%%">
     <input type="hidden" name="g-recaptcha-response" id="register_form_hidden_cf_response" value="">
 
@@ -33,14 +32,13 @@
         toggle: "popover",
         title: window.innerWidth > 850 ? "Scan with authenticator app" : "Add MFA to your device",
         content: window.innerWidth > 850 ?
-            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" class="btn btn-primary btn-sm">Click to Add OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`: 
-            `<a href="${otpUrl}" class="btn btn-primary btn-sm">Click to Add OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`
+            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`: 
+            `<a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`
         ,
-        trigger: "custom",
+        trigger: "manual",
         placement: window.innerWidth < 850 ? 'top' : "right",
         html: true,
     });
-
     
     tk.addEventListener('shown.bs.popover', () => {
         if (window.innerWidth > 850 ) {
@@ -61,49 +59,51 @@
             myQR.draw();
         }
 
-        document.querySelector('#btn-copy-otp').addEventListener('click', function () {
+        document.querySelectorAll('#btn-copy-otp,#btn-add-otp').forEach(btn => btn.addEventListener('click', function () {
             return window.copy(otpUrl);
-        });
+        }));
     });
 
     window.retry = function () {
         tk.focus();
-        popover.toggle();
+        popover.show();
     };
     window.retry();
 
     window.register = function (form) {
-        if (!document.querySelector('#tokenInput').value) {
+        if (!tk.value) {
             bootstrapToastr({
                 title: "MFA Code",
                 message: 'Please input MFA code.',
                 duraction: 5000
             });
+            tk.focus();
             return false;
         }
-        if (document.querySelector('#tokenInput').value.length != 6) {
+        if (tk.value.length != 6) {
             bootstrapToastr({
                 title: "MFA Code",
                 message: 'MFA code is a 6 digits number.',
                 duraction: 5000
             });
+            tk.focus();
             return false;
         }
 
         document.querySelector('#btn-submit').setAttribute('disabled', true)
         document.querySelector('#btn-submit').innerHTML = 'Pending...';
 
-        window.captchaChallenge(function (challengeResponse) {
+        popover.hide();
+        window.captchaChallenge('register', function (challengeResponse, modalCaptcha) {
             document.querySelector('#register_form_hidden_cf_response').value = challengeResponse;
             setTimeout(function () {
-                fetch('/login', {
+                fetch(form.action, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Accept': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: `register`,
                         email: form.elements['email'].value,
                         secret: form.elements['secret'].value,
                         token: form.elements['token'].value,
@@ -112,34 +112,35 @@
                 }).then(function (res) {
                     return res.json()
                 }).then(function (json) {
-                    popover.hide();
+                    modalCaptcha.hide();
                     bootstrapToastr({
-                        title: "Error",
+                        title: "Result",
                         message: json.message,
                         duraction: 5000
                     });
                     if (!json.success) {
-                        setTimeout(() => {
-                            window.retry();
-                        }, 6000);
+                        tk.focus();
+                        setTimeout(window.retry, 1000);
                     }
                 }).catch(function (err) {
+                    modalCaptcha.hide();
                     bootstrapToastr({
                         title: "Error",
                         message: err.message,
                         duraction: 5000
                     });
-                    setTimeout(() => {
-                        window.retry();
-                    }, 6000);
+                    tk.focus();
+                    setTimeout(window.retry, 1000);
                 }).finally(function () {
                     document.querySelector('#btn-submit').removeAttribute('disabled')
                     document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
+                    tk.focus();
                 });
             }, 500);
         }, function () {
             document.querySelector('#btn-submit').removeAttribute('disabled')
             document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
+            tk.focus();
         });
 
         return false;
@@ -157,6 +158,7 @@
             message: 'Copied to clipboard.',
             duraction: 5000
         });
+        tk.focus();
         return false;
     };
 </script>
