@@ -16,7 +16,7 @@ https://developers.cloudflare.com/workers/wrangler/install-and-update/
 ## Local development
 
 ```
-wrangler d1 execute DB --local --file=migration/table.sql
+wrangler d1 migrations apply DB
 ```
 
 
