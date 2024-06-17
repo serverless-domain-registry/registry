@@ -1,7 +1,6 @@
 %%HEADER%%
 
-<form method="POST" action="/login" onsubmit="return window.doLogin(this);">
-    <input type="hidden" name="action" value="login">
+<form method="POST" action="/login/auth-factor" onsubmit="return window.doLogin(this);">
     <input type="hidden" name="g-recaptcha-response" id="login_form_hidden_cf_response" value="">
 
     <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
@@ -30,51 +29,58 @@
         document.querySelector('#btnSubmit').innerHTML = 'Pending...';
         document.querySelector('#btnSubmit').setAttribute('disabled', true);
 
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge('login', function (challengeResponse, modalCaptcha) {
             document.querySelector('#login_form_hidden_cf_response').value = challengeResponse;
             document.querySelector('#btnSubmit').innerHTML = 'Pending...';
             document.querySelector('#btnSubmit').setAttribute('disabled', true);
-            fetch('/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: form.elements['action'].value,
-                        email: form.elements['email'].value,
-                        token: form.elements['token'].value,
-                        'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
-                    }),
-                }).then(function (res) {
-                    return res.json()
-                }).then(function (json) {
-                    if (json.success) {
-                        location.href = '/dashboard';
-                        document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
-                        return;
-                    }
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: form.elements['email'].value,
+                    token: form.elements['token'].value,
+                    'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
+                }),
+            }).then(function (res) {
+                return res.json()
+            }).then(function (json) {
+                modalCaptcha.hide();
+                if (json.success) {
+                    location.href = '/dashboard';
+                    document.querySelector('#btnSubmit').innerHTML = 'Login Successfully...';
+                    return;
+                }
 
-                    var tk = document.querySelector('#mfaField');
-                    var popover = new bootstrap.Popover(tk, {
-                        toggle: "popover",
-                        title: "Error",
-                        content: json.message,
-                        trigger: "custom",
-                        placement: window.innerWidth < 850 ? 'top' : "right",
-                        html: true,
-                    });
-                    setTimeout(function () {
-                        document.querySelector('#mfaField').focus();
-                        popover.show();
-                    }, 300);
-
-                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
-                    document.querySelector('#btnSubmit').removeAttribute('disabled');
-                }).catch(function () {
-                    document.querySelector('#btnSubmit').innerHTML = 'Sign in';
-                    document.querySelector('#btnSubmit').removeAttribute('disabled');
+                var tk = document.querySelector('#mfaField');
+                var popover = new bootstrap.Popover(tk, {
+                    toggle: "popover",
+                    title: "Error",
+                    content: json.message,
+                    trigger: "custom",
+                    placement: window.innerWidth < 850 ? 'top' : "right",
+                    html: true,
                 });
+                setTimeout(function () {
+                    if (json.message == 'MFA code is invalid') {
+                        document.querySelector('#mfaField').value = '';
+                    }
+                    document.querySelector('#mfaField').focus();
+                    popover.show();
+                }, 300);
+
+                document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                document.querySelector('#btnSubmit').removeAttribute('disabled');
+            }).catch(function () {
+                document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+                document.querySelector('#btnSubmit').removeAttribute('disabled');
+            });
+        }, function () {
+            modalCaptcha.hide();
+            document.querySelector('#btnSubmit').innerHTML = 'Sign in';
+            document.querySelector('#btnSubmit').removeAttribute('disabled');
         });
         return false;
     };

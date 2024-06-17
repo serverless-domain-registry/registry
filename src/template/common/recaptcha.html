@@ -21,23 +21,34 @@
 </div>
 
 <script src="https://www.recaptcha.net/recaptcha/api.js?render=%%SITE_KEY%%"></script>
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
 <script>
   window.modalCaptcha = new bootstrap.Modal(document.getElementById('modalCaptcha'), {
     backdrop: false,
   })
 
-  window.captchaChallenge = function (resolve) {
+  window.captchaChallenge = function (action, resolve, reject) {
     window.modalCaptcha.show();
     setTimeout(function () {
       window.modalCaptcha.hide();
     }, 800);
-    grecaptcha.ready(function() {
-      grecaptcha.execute('%%SITE_KEY%%', {action: 'submit'}).then(function(challengeResponse) {
+    grecaptcha.ready(function () {
+      try {
+        grecaptcha.execute('%%SITE_KEY%%', { action: action }).then(function (challengeResponse) {
+          // window.modalCaptcha.hide();
+          resolve(challengeResponse, window.modalCaptcha);
+        });
+      } catch (error) {
+        bootstrapToastr({
+          title: "Error",
+          message: error,
+          duraction: 5000
+        });
         window.modalCaptcha.hide();
-        resolve(challengeResponse);
-      }).catch(function(error) {
-        window.modalCaptcha.hide();
-      });
+        if (reject) {
+          reject(error);
+        }
+      }
     });
   };
 </script>

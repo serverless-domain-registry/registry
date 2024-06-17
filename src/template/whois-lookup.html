@@ -84,34 +84,20 @@
             </div>
         </div>
 
-        <div class="modal fade" id="modalError" tabindex="-1" aria-labelledby="modalErrorLabel" aria-modal="true" role="dialog">
-            <div class="modal-dialog modal-dialog-sm modal-dialog-centered" style="width: 335px;">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h1 class="modal-title fs-5" id="modalErrorLabel">Error</h1>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
-                </div>
-                <div class="modal-body">
-                    The function is not implemented yet!
-                </div>
-              </div>
-            </div>
-        </div>
-
 %%FOOTER%%
 
 %%RECAPTCHA%%
 
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/showModal.js"></script>
 <script>
-    window.modalContact = new bootstrap.Modal(document.getElementById('modalContact'), {})
-    window.modalError = new bootstrap.Modal(document.getElementById('modalError'), {})
+    window.modalContact = new bootstrap.Modal(document.getElementById('modalContact'), {});
 
     window.whoisQuery = function () {
         if (document.querySelector('#domainField').value.trim().length > 0 && !document.querySelector('#domainField').value.trim().toLowerCase().endsWith('.com.mp') && !document.querySelector('#domainField').value.trim().includes('.')) {
             document.querySelector('#domainField').value = document.querySelector('#domainField').value.trim() + '.com.mp';
         }
         document.querySelector('#whoisInfo').style.display = 'none';
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge('whois_lookup', function (challengeResponse, modalCaptcha) {
             document.querySelector('#whois_form_hidden_cf_response').value = challengeResponse;
 
             document.querySelector('#btnCheck').setAttribute('disabled', 'disabled');
@@ -132,6 +118,7 @@
                 },
                 body: JSON.stringify(data)
             }).then((res) => res.json()).then((json) => {
+                modalCaptcha.hide();
                 if (!json.success) {
                     document.querySelector('#errTip').innerHTML = json.message;
                     return;
@@ -168,6 +155,10 @@
                 document.querySelector('#btnCheck').innerHTML = 'Look Up';
             });
             return false;
+        }, function () {
+            modalCaptcha.hide();
+            document.querySelector('#btnCheck').removeAttribute('disabled');
+            document.querySelector('#btnCheck').innerHTML = 'Look Up';
         });
 
         return false;
@@ -178,9 +169,12 @@
     };
 
     window.contactSend = function () {
-        window.captchaChallenge(function (challengeResponse) {
+        window.captchaChallenge('whois_contact', function (challengeResponse, modalCaptcha) {
+            modalCaptcha.hide();
             document.querySelector('#contact_form_hidden_cf_response').value = challengeResponse;
-            window.modalError.show();
+            bootstrap.showAlert({title: null, body: 'The function is not implemented yet!',headerClass: 'hide',modalDialogClass: 'modal-dialog-centered',});
+        }, function () {
+            modalCaptcha.hide();
         });
         return false;
     }
