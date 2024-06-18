@@ -308,7 +308,7 @@ ns2.server.com
       for (var i = 0; i < domains.length; ++i) {
         var domain = domains[i];
         (function (domain) {
-          window.captchaChallenge('domain-reg', function (challengeResponse, modalCaptcha) {
+          window.captchaChallenge('domain_reg', function (challengeResponse, modalCaptcha) {
             fetch(location.href, {
               method: 'POST',
               headers: {
