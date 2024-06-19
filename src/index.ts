@@ -212,7 +212,7 @@ router.get('/resources/registrars', async () => {
   });
 });
 
-router.get('/support/report-abuse', async () => {
+router.get('/support/report-abuse', async (request: Request, env: Env, ctx: ExecutionContext) => {
   return new Response(supportReportAbuseTpl.replace(/\%\%HEADER\%\%/g, headerTpl).replace(/\%\%FOOTER\%\%/g, footerTpl).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), {
     headers,
   });
