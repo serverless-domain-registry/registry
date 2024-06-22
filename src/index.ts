@@ -299,13 +299,13 @@ router.post('/login/auth-factor', async (request: Request, env: Env, ctx: Execut
     if (!(await validateTotp(token, secret))) {
       return Response.json({
         success: false,
-        message: 'MFA code is invalid',
+        message: 'MFA code is invalid, try to calibrate the OTP device sys time?',
       });
     }
   } catch (err) {
     return Response.json({
       success: false,
-      message: `MFA code is invalid: ${err}`,
+      message: `MFA code is invalid, try to calibrate the OTP device sys time?\n${err}`,
     });
   }
 
@@ -369,13 +369,13 @@ router.post('/register', async (request: Request, env: Env, ctx: ExecutionContex
     if (!(await validateTotp(token, secret))) {
       return Response.json({
         success: false,
-        message: 'MFA code is invalid',
+        message: 'MFA code is invalid, try to calibrate the OTP device sys time?',
       });
     }
   } catch (err) {
     return Response.json({
       success: false,
-      message: `MFA code is invalid: ${err}`,
+      message: `MFA code is invalid, try to calibrate the OTP device sys time?\n${err}`,
     });
   }
   const expiration = new Date().getTime() + 86400 * 1000;
