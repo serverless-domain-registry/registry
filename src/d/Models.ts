@@ -33,10 +33,10 @@ export interface Domain {
   domain: string;
   status: DomainStatus;
   ns_servers: string;
-  type: 'free'|'vip';
+  type: 'free' | 'vip';
   created_at: number;
   expires_at: number;
-  updated_at: null|number;
+  updated_at: null | number;
   contact?: string;
 }
 
@@ -47,5 +47,7 @@ export interface User {
   credit: number;
   total_spent: number;
   created_at: number;
-  updated_at: null|number;
+  updated_at: null | number;
 }
+
+export interface Sender { apiKey: string; senderName: string; senderAddress: string; };

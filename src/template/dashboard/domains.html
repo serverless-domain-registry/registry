@@ -272,9 +272,6 @@
                     <li class="nav-item">
                         <a class="nav-link active" href="/dashboard/domains">My Domains</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/dashboard/reg-domain">Register Domains</a>
-                    </li>
                 </ul>
                 <ul class="mb-2 mb-lg-0 navbar-nav">
                     <form class="d-flex" role="search">
@@ -308,20 +305,19 @@
                 -->
             </a>
             <a class="nav-link" href="#" onclick="alert('available soon');">Expires soon</a>
+            <a class="nav-link" href="/dashboard/reg-domain">Register Domains</a>
         </nav>
     </div>
 
     <main class="container">
-        <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm" onclick="location.href = 'tg://resolve?domain=com_mp'">
-            <svg xmlns="http://www.w3.org/2000/svg" height="30" viewBox="0 0 20 20" width="30"><path d="m1.77404283 9.58769086c4.67714245-1.99564845 7.79596997-3.31130205 9.35648257-3.9469608 4.4555806-1.81493491 5.381412-2.13020854 5.984856-2.14061906.1327219-.0022897.4294781.02992311.6217044.18267827.162312.12898346.2069705.30322179.2283411.42551228.0213705.12229049.047982.40087134.0268279.61854631-.2414495 2.48450744-1.2861975 8.51375174-1.817706 11.29644264-.2249011 1.1774608-.6709749 1.4294697-1.0996928 1.4681058-.9317032.0839651-1.6359598-.4602232-2.5383599-1.0395344-1.412078-.9065075-1.9311138-1.1506648-3.30178003-2.0352487-1.58404193-1.0222898-.71982554-1.5573792.18291533-2.4756292.23625159-.2403103 4.3705401-3.98382431 4.4499945-4.31554914.0099371-.04148774-.12607-.45629906-.2198814-.53795815s-.2322689-.05373486-.3321837-.03152647c-.1416262.03147972-2.397439 1.49167812-6.76743852 4.38059516-.64030496.4305972-1.22027332.6403987-1.73990507.6294043-.5728523-.0121204-1.67479033-.3172064-2.49396798-.5779863-1.00475474-.3198572-1.37564449-.4704946-1.30610794-1.013711.03621894-.2829407.29151946-.57846124.76590154-.88656154z" fill="#fff" fill-rule="evenodd"></path></svg>
-            <div>
-                <h1 class="h6 m-0" style="margin-left: 10px !important;">Join our Telegram group!</h1>
-            </div>
-        </div>
-
+        %%BANNER%%
         <div class="my-3 p-3 bg-body rounded shadow-sm">
             <h6 class="border-bottom pb-2 mb-0">My domains</h6>
 
+            <div id="domain-list-empty" class="my-5 py-5 text-center text-secondary d-none">
+                <p>You have no registered domain names.</p>
+                <a class="btn btn-primary" href="/dashboard/reg-domain">Register your first .com.mp</a>
+            </div>
             <div id="domain-list">
                 <div class="d-flex text-body-secondary pt-3 border-bottom">
                     <p class="pb-3 mb-0 small lh-sm">
@@ -365,8 +361,7 @@
                     </p>
                 </div>
             </div>
-
-            <div class="grid gap-3 pt-3">
+            <div id="domain-list-pagination" class="grid gap-3 pt-3">
                 <div class="g-col-7">
                     <nav aria-label="Page navigation" class="d-inline-block mt-4" style="margin-right: 5px;">
                         <ul class="pagination hide" id="pagination"> </ul>
@@ -514,9 +509,7 @@
                     order: order
                 })
             }).then(function (response) {return response.json();}).then(function (json) {
-                console.log('then');
                 window.modalRefreshing.hide();
-                console.log(window.modalRefreshing);
                 const list = json.data.list;
                 document.querySelector('#domain-list').innerHTML = [...list].map(function (item) {
                     return `<div class="d-md-flex d-lg-flex text-body-secondary pt-3 border-bottom">
@@ -568,8 +561,11 @@
                 };
 
                 document.querySelector('#pagination').innerHTML = ``;
-
-                if (json.data.paginate.total > 1) {
+                if (!json.data.paginate.total || json.data.paginate.total < 1) {
+                    $('#domain-list-empty').classList.remove('d-none');
+                    $('#domain-list').classList.add('d-none');
+                    $('#domain-list-pagination').classList.add('d-none');
+                } else {
                     var hasFirst = false, hasLast = false;
                     document.querySelector('#pagination').innerHTML += window.renderPage(Math.max(1, json.data.paginate.page - 1), `Previous`);
                     if (json.data.paginate.page === 1) {
@@ -622,10 +618,8 @@
                 window.page_size = json.data.paginate.page_size;
                 history.pushState({}, '', `?page=${json.data.paginate.page}&page_size=${json.data.paginate.page_size}&search=${json.data.search}&sort=${json.data.sort}&order=${json.data.order}`);
             }).catch(function (err) {
-                console.log('catch');
                 window.modalRefreshing.hide();
             }).finally(function () {
-                console.log('finally');
                 window.modalRefreshing.hide();
             });
         };

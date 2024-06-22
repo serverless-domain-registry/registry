@@ -112,6 +112,10 @@
     .bd-mode-toggle .dropdown-menu .active .bi {
       display: block !important;
     }
+
+    [data-bs-theme="dark"] .nav-scroller .active {
+        color: #fff;
+    }
   </style>
   <link href="https://getbootstrap.com/docs/5.3/examples/offcanvas-navbar/offcanvas-navbar.css" rel="stylesheet">
 </head>
@@ -204,9 +208,6 @@
           <li class="nav-item">
             <a class="nav-link" href="/dashboard/domains">My Domains</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link active" href="/dashboard/reg-domain">Register Domains</a>
-          </li>
         </ul>
         <ul class="mb-2 mb-lg-0 navbar-nav">
           <form class="d-flex" role="search">
@@ -233,28 +234,24 @@
 
   <div class="nav-scroller bg-body shadow-sm">
     <nav class="nav" aria-label="Secondary navigation">
-      <a class="nav-link active" aria-current="page" href="#">Dashboard</a>
-      <a class="nav-link" href="#">
-        Friends
-        <span class="badge text-bg-light rounded-pill align-text-bottom">27</span>
+      <a class="nav-link" href="/dashboard/domains">
+          Domains
+          <!--
+              <span class="badge text-bg-light rounded-pill align-text-bottom">27</span>
+          -->
       </a>
-      <a class="nav-link" href="#">Explore</a>
-      <a class="nav-link" href="#">Suggestions</a>
+      <a class="nav-link" href="#" onclick="alert('available soon');">Expires soon</a>
+      <a class="nav-link active" href="/dashboard/reg-domain">Register Domains</a>
     </nav>
   </div>
 
   <main class="container">
-    <div class="d-flex align-items-center p-3 my-3 text-white bg-purple rounded shadow-sm">
-      <img class="me-3" src="https://getbootstrap.com/docs/5.3/assets/brand/bootstrap-logo-white.svg" alt="" width="48" height="38">
-      <div class="lh-1">
-        <h1 class="h6 mb-0 text-white lh-1">Bootstrap</h1>
-        <small>Since 2011</small>
-      </div>
-    </div>
+    %%BANNER%%
+
     <div class="my-3 p-3 bg-body rounded shadow-sm">
       <h6 class="border-bottom pb-2 mb-0">Register Domain(s)</h6>
       <div class="pt-3 text-body-secondary">
-        <form id="regDomainForm" method="POST" onsubmit="return window.regDomain()">
+        <form id="regDomainForm" method="POST" style="max-width: 700px;" onsubmit="return window.regDomain()">
           <div class="mb-3">
             <label for="exampleFormControlTextarea1" class="form-label">Domain(s)</label>
             <textarea class="form-control" name="domains" id="domainsField" rows="5" required placeholder="domain1.com.mp
@@ -283,7 +280,12 @@ ns2.server.com
   %%RECAPTCHA%%
 
   <script>
-    var popover = new bootstrap.Popover(document.querySelector('#dnsServersField'), {content: 'Please note that for now, most DNS providers (including CloudFlare) dis-admission our domain. It is recommended that you add it in the DNS provider first and if operationn success perform the registration process in us. Of course, if you find that the domain cannot be added in you current DNS provider, we do also support the DNS modification process.<br/><br/><a href="https://github.com/publicsuffix/list/pull/1993" target="_blank">Root(PSL) inclusion PR request</a> has been submitted to PSL\'s github for review; this situation is expected to change after the PR is merged.', placement: 'top', html: true});
+    var popover = new bootstrap.Popover(document.querySelector('#dnsServersField'), {
+      content: 'Please note that for now, most DNS providers (including CloudFlare) dis-admission our domain. It is recommended that you add it in the DNS provider first and if operationn success perform the registration process in us. Of course, if you find that the domain cannot be added in you current DNS provider, we do also support the DNS modification process.<br/><br/><a href="https://github.com/publicsuffix/list/pull/1993" target="_blank">Root(PSL) inclusion PR request</a> has been submitted to PSL\'s github for review; this situation is expected to change after the PR is merged.',
+      placement: 'right',
+      trigger: 'hover focus',
+      html: true
+    });
 
     window.regDomain = function () {
       var domains = document.getElementById('domainsField').value.trim().split('\n').filter(Boolean);

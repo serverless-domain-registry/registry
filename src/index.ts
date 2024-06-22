@@ -25,6 +25,8 @@ import authFooterTpl from 'template/common/auth/footer.html';
 // @ts-ignore
 import recaptchaTpl from 'template/common/recaptcha.html';
 // @ts-ignore
+import dashboardBannerTpl from 'template/dashboard/common/banner.html';
+// @ts-ignore
 import indexTpl from 'template/index.html';
 // @ts-ignore
 import loginTpl from 'template/login.html';
@@ -534,7 +536,7 @@ router.get('/dashboard/domains', async (request: Request, env: Env, ctx: Executi
     }
     tpl = tpl.replace(new RegExp(`\%\%USER\.${key.toUpperCase()}\%\%`, 'g'), value);
   }
-  return new Response(tpl.replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+  return new Response(tpl.replace(/%%BANNER%%/g, dashboardBannerTpl).replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
 router.post('/dashboard/domains', async (request: Request, env: Env, ctx: ExecutionContext) => {
@@ -615,7 +617,7 @@ router.get('/dashboard/balance', async (request: Request, env: Env, ctx: Executi
     }
     tpl = tpl.replace(new RegExp(`\%\%USER\.${key.toUpperCase()}\%\%`, 'g'), value);
   }
-  return new Response(tpl.replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+  return new Response(tpl.replace(/%%BANNER%%/g, dashboardBannerTpl).replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
 router.post('/dashboard/balance', async (request: Request, env: Env, ctx: ExecutionContext) => {
@@ -735,7 +737,7 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
     }
     tpl = tpl.replace(new RegExp(`\%\%USER\.${key.toUpperCase()}\%\%`, 'g'), value);
   }
-  return new Response(tpl.replace(new RegExp(`\%\%DOMAIN\%\%`, 'g'), domain && domain?.trim() ? domain.trim() + `\n` : '').replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+  return new Response(tpl.replace(/%%BANNER%%/g, dashboardBannerTpl).replace(new RegExp(`\%\%DOMAIN\%\%`, 'g'), domain && domain?.trim() ? domain.trim() + `\n` : '').replace(/\%\%LIVECHAT\%\%/g, livechatTpl.replace(/\%\%USER.CREDIT%%/g, user.credit)).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
 router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: ExecutionContext) => {

@@ -10,9 +10,9 @@
   },
   "dependencies": {},
   "devDependencies": {
+    "@cloudflare/workers-types": "^v1.22.22",
     "itty-router": "v4.0.23",
-    "wrangler": "^3.59.0",
-    "@cloudflare/workers-types": "^v1.22.22"
+    "wrangler": "^3.61.0"
   },
   "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
