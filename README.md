@@ -52,7 +52,6 @@ BREVO=[
     {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"},
     {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"}
 ]
-
 ```
 
 ### Deploy
