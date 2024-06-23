@@ -793,6 +793,37 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
         message: `Invalid domain ${domain}`,
       });
     }
+    if (!domain.endsWith(`.com.mp`)) {
+      return Response.json({
+        success: false,
+        message: `Domain name ${domain} must ends with .com.mp`,
+      });
+    }
+  
+    if (domain.length > 7 + 64) {
+      return Response.json({
+        success: false,
+        message: `Domain name ${domain} length exeeded`,
+      });
+    }
+  
+    const r = domain.match(/\./g);
+    if (!r || r?.length > 2) {
+      return Response.json({
+        success: false,
+        message: `Subdomain ${domain} not allowed`,
+      });
+    }
+    if (
+      domain.startsWith(`-`) || domain.endsWith(`-`) || domain.startsWith(`_`) || domain.endsWith(`_`) ||
+      domain.startsWith(`.`) || domain.endsWith(`.`) ||
+      domain.includes(`@`) || !domain.match(/^[\.\-\_\w\d]+$/)
+    ) {
+      return Response.json({
+        success: false,
+        message: `Invalid domain ${domain}`,
+      });
+    }
   }
 
   if (!domains || !dnsServers || !domains.length || !dnsServers.length) {
