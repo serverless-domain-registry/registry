@@ -315,6 +315,10 @@ router.post('/auth/login/auth-factor', async (request: Request, env: Env, ctx: E
   }
 
   const user_id = user.id;
+  const ip = request.headers.get('cf-connecting-ip');
+
+  await env.DB.prepare(`UPDATE users SET lastip=?2 WHERE id=?1`).bind(user_id, ip).run();
+
   return await loginSession(request, env.DB, user_id, 'json');
 });
 
@@ -328,7 +332,8 @@ router.get('/auth/register', async (request: Request, env: Env, ctx: ExecutionCo
 });
 
 router.post('/auth/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
-  const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
+  const post = <{ email: string; token: string; secret: string;}>await readRequestBody(request);
+  const ip = request.headers.get('cf-connecting-ip');
 
   try {
     if (!await recaptchaChallange(env, request)) {
@@ -344,14 +349,20 @@ router.post('/auth/register', async (request: Request, env: Env, ctx: ExecutionC
     });
   }
 
-  const user = await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
-    .bind(post.email)
+  const user = await env.DB.prepare(`SELECT * FROM users WHERE email=?1 or regip=?2 or lastip=?3`)
+    .bind(post.email, ip, ip)
     .first();
 
-  if (user) {
+  if (user && user.email === post.email) {
     return Response.json({
       success: false,
       message: 'Another account with the email address already exists',
+    });
+  }
+  if (user && (user.regip === ip || user.lastip === ip)) {
+    return Response.json({
+      success: false,
+      message: 'Register fail, please try again later',
     });
   }
 
@@ -424,6 +435,7 @@ router.get('/auth/register/activation', async (request: Request, env: Env, ctx: 
     return new Response(`Invalid activation link`, { headers, });
   }
   let email: string, expiration: number, signupTime: number, secret: string;
+  let ip = request.headers.get('cf-connecting-ip');
 
   try {
     const decrypted = JSON.parse(await decryptData(env.AES_KEY, hexToBuffer(encryptData), hexToBuffer(ivData)));
@@ -441,13 +453,7 @@ router.get('/auth/register/activation', async (request: Request, env: Env, ctx: 
 
   // do register db insert
   const user_id = uuid();
-  const { count, duration } = (await env.DB.prepare(`INSERT INTO users (id, email, mfa_secret, credit, total_spent, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6)`).bind(user_id, email.toLowerCase(), secret, 0, 0, signupTime).run()).meta;
-  if (!duration) {
-    return Response.json({
-      success: false,
-      message: 'User insert failed',
-    });
-  }
+  await env.DB.prepare(`INSERT INTO users (id, email, mfa_secret, credit, total_spent, regip, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`).bind(user_id, email.toLowerCase(), secret, 0, 0, ip, signupTime).run();
 
   return await loginSession(request, env.DB, user_id, 'Your account has been activated successfully! Redirecting...');
 });
