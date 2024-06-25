@@ -1,8 +1,13 @@
 %%HEADER%%
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PeytonRG/BootstrapToaster@4.1.2/css/bootstrap-toaster.min.css">
+<style>
+    #btn-copy-otp {
+        margin-left: 6px;
+    }
+</style>
 
-<form method="POST" action="/register" onsubmit="return window.register(this);">
+<form method="POST" action="/auth/register" onsubmit="return window.register(this);">
     <input type="hidden" name="secret" value="%%SECRET%%">
     <input type="hidden" name="g-recaptcha-response" id="register_form_hidden_cf_response" value="">
 
@@ -14,7 +19,7 @@
         <label for="emailInput">Email address</label>
     </div>
     <div class="form-floating">
-        <input type="number" name="token" class="form-control rounded-0" id="tokenInput" placeholder="6 digits number" autocomplete="off" maxlength="6">
+        <input type="number" name="token" class="form-control rounded-0" id="tokenInput" placeholder="6 digits number" autocomplete="off" maxlength="6" min="000001" max="999999" autofocus>
         <label for="tokenInput">MFA Code</label>
     </div>
     <button class="btn btn-primary btn-lg rounded-top-0 py-2 rounded-top-0 w-100" type="submit" id="btn-submit">Next: email activation</button>
@@ -26,14 +31,14 @@
 <script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
 %%RECAPTCHA%%
 <script>
-    var otpUrl = 'otpauth://totp/Com.MP Domains:%%EMAIL%%?secret=%%SECRET%%&issuer=Com.MP Domains';
-    var tk = document.querySelector('#tokenInput');
+    var otpUrl = 'otpauth://totp/Com.MP Domains' + (['localhost' , '127.0.0.1'].includes(location.hostname) ? ('(dev)') : '') + ':%%EMAIL%%?secret=%%SECRET%%&issuer=Com.MP Domains' + (['localhost' , '127.0.0.1'].includes(location.hostname) ? ('(dev)') : '');
+    var tk = $('#tokenInput');
     var popover = new bootstrap.Popover(tk, {
         toggle: "popover",
         title: window.innerWidth > 850 ? "Scan with authenticator app" : "Add MFA to your device",
         content: window.innerWidth > 850 ?
-            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`: 
-            `<a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`
+            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <button id="btn-copy-otp">or copy</button><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`: 
+            `<a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <button href="#" id="btn-copy-otp">or copy</button><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device, We do not offer recovery services.</small></b>`
         ,
         trigger: "manual",
         placement: window.innerWidth < 850 ? 'top' : "right",
@@ -45,7 +50,7 @@
             var canvas = document.createElement('canvas');
             canvas.style.width = '242px';
             canvas.style.height = '242px';
-            document.querySelector('#canvasContainer').appendChild(canvas);
+            $('#canvasContainer').appendChild(canvas);
 
             var myQR = QRCode.QRCodeBrowser(canvas);
             myQR.setOptions({
@@ -90,12 +95,12 @@
             return false;
         }
 
-        document.querySelector('#btn-submit').setAttribute('disabled', true)
-        document.querySelector('#btn-submit').innerHTML = 'Pending...';
+        $('#btn-submit').setAttribute('disabled', true)
+        $('#btn-submit').innerHTML = 'Pending...';
 
         popover.hide();
         window.captchaChallenge('register', function (challengeResponse, modalCaptcha) {
-            document.querySelector('#register_form_hidden_cf_response').value = challengeResponse;
+            $('#register_form_hidden_cf_response').value = challengeResponse;
             setTimeout(function () {
                 fetch(form.action, {
                     method: 'POST',
@@ -107,7 +112,7 @@
                         email: form.elements['email'].value,
                         secret: form.elements['secret'].value,
                         token: form.elements['token'].value,
-                        'g-recaptcha-response': document.querySelector('#register_form_hidden_cf_response').value,
+                        'g-recaptcha-response': $('#register_form_hidden_cf_response').value,
                     }),
                 }).then(function (res) {
                     return res.json()
@@ -132,14 +137,14 @@
                     tk.focus();
                     setTimeout(window.retry, 1000);
                 }).finally(function () {
-                    document.querySelector('#btn-submit').removeAttribute('disabled')
-                    document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
+                    $('#btn-submit').removeAttribute('disabled')
+                    $('#btn-submit').innerHTML = 'Next: email activation';
                     tk.focus();
                 });
             }, 500);
         }, function () {
-            document.querySelector('#btn-submit').removeAttribute('disabled')
-            document.querySelector('#btn-submit').innerHTML = 'Next: email activation';
+            $('#btn-submit').removeAttribute('disabled')
+            $('#btn-submit').innerHTML = 'Next: email activation';
             tk.focus();
         });
 

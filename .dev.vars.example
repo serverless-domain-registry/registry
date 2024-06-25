@@ -9,7 +9,4 @@ EPUSDT_API_URL=""
 RECAPTCHA_SECRET_KEY=""
 RECAPTCHA_SITE_KEY=""
 BREVO_PREFER="auto"
-BREVO=[
-    {"apiKey": "", "senderName": "No reply", "senderAddress": "**"},
-    {"apiKey": "", "senderName": "No reply", "senderAddress": "**"}
-]
+BREVO=[ {"apiKey": "", "senderName": "No reply", "senderAddress": "**"}, {"apiKey": "", "senderName": "No reply", "senderAddress": "**"} ]

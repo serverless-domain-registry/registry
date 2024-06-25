@@ -1,0 +1,169 @@
+%%HEADER%%
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/PeytonRG/BootstrapToaster@4.1.2/css/bootstrap-toaster.min.css">
+<style>
+    #btn-copy-otp {
+        margin-left: 6px;
+    }
+</style>
+
+<form method="POST" action="/auth/recovery-mfa" onsubmit="return window.doReset(this);">
+    <input type="hidden" name="secret" value="%%SECRET%%">
+    <input type="hidden" name="g-recaptcha-response" id="reset_form_hidden_cf_response" value="">
+
+    <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
+    <h1 class="h3 mb-3 fw-normal">Recovery MFA</h1>
+
+    <div class="form-floating">
+        <input type="email" name="email" class="form-control rounded-bottom-0" id="emailInput" value="%%EMAIL%%" readonly disabled>
+        <label for="emailInput">Email address</label>
+    </div>
+    <div class="form-floating">
+        <input type="number" name="token" class="form-control rounded-0" id="tokenInput" placeholder="6 digits number" autocomplete="off" maxlength="6" min="000001" max="999999">
+        <label for="tokenInput">MFA Code</label>
+    </div>
+    <button class="btn btn-primary btn-lg rounded-top-0 py-2 rounded-top-0 w-100" type="submit" id="btn-submit">Submit</button>
+    <p class="mt-5 mb-3 text-body-secondary">© 2024</p>
+</form>
+%%FOOTER%%
+<script src="https://cdn.jsdelivr.net/npm/@qrcode-js/browser@1.2.0/dist/index.js"></script>
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/showModal.js"></script>
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
+%%RECAPTCHA%%
+<script>
+    var otpUrl = 'otpauth://totp/Com.MP Domains' + (['localhost' , '127.0.0.1'].includes(location.hostname) ? ('(dev)') : '') + ':%%EMAIL%%?secret=%%SECRET%%&issuer=Com.MP Domains' + (['localhost' , '127.0.0.1'].includes(location.hostname) ? ('(dev)') : '');
+    var tk = $('#tokenInput');
+    var popover = new bootstrap.Popover(tk, {
+        toggle: "popover",
+        title: window.innerWidth > 850 ? "Scan with authenticator app" : "Add MFA to your device",
+        content: window.innerWidth > 850 ?
+            `<div id="canvasContainer"></div><br/><a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device.</small></b>`: 
+            `<a href="${otpUrl}" id="btn-add-otp" class="btn btn-primary btn-sm">Add to OTP</a> <a href="#" id="btn-copy-otp">or copy</a><br/><br/> And input 6 digits number your authenticator shows. <br/> <br/> <b> <small>Don\'t lose your authenticator device.</small></b>`
+        ,
+        trigger: "manual",
+        placement: window.innerWidth < 850 ? 'top' : "right",
+        html: true,
+    });
+    
+    tk.addEventListener('shown.bs.popover', () => {
+        if (window.innerWidth > 850 ) {
+            var canvas = document.createElement('canvas');
+            canvas.style.width = '242px';
+            canvas.style.height = '242px';
+            $('#canvasContainer').appendChild(canvas);
+
+            var myQR = QRCode.QRCodeBrowser(canvas);
+            myQR.setOptions({
+                text: otpUrl,
+                color: document.getElementsByTagName('html')[0].getAttribute('data-bs-theme') === 'dark' ? '#fff' : "#000",
+                size: 484,
+                finder: {
+                    round: 0.5,
+                },
+            });
+            myQR.draw();
+        }
+
+        document.querySelectorAll('#btn-copy-otp,#btn-add-otp').forEach(btn => btn.addEventListener('click', function () {
+            return window.copy(otpUrl);
+        }));
+    });
+
+    window.retry = function () {
+        tk.focus();
+        popover.show();
+    };
+    window.retry();
+
+    window.doReset = function (form) {
+        if (!tk.value) {
+            bootstrapToastr({
+                title: "MFA Code",
+                message: 'Please input MFA code.',
+                duraction: 5000
+            });
+            tk.focus();
+            return false;
+        }
+        if (tk.value.length != 6) {
+            bootstrapToastr({
+                title: "MFA Code",
+                message: 'MFA code is a 6 digits number.',
+                duraction: 5000
+            });
+            tk.focus();
+            return false;
+        }
+
+        $('#btn-submit').setAttribute('disabled', true)
+        $('#btn-submit').innerHTML = 'Pending...';
+
+        popover.hide();
+        window.captchaChallenge('mfa_recovery', function (challengeResponse, modalCaptcha) {
+            $('#reset_form_hidden_cf_response').value = challengeResponse;
+            setTimeout(function () {
+                fetch(location.href, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        email: form.elements['email'].value,
+                        secret: form.elements['secret'].value,
+                        token: form.elements['token'].value,
+                        'g-recaptcha-response': $('#reset_form_hidden_cf_response').value,
+                    }),
+                }).then(function (res) {
+                    return res.json()
+                }).then(function (json) {
+                    modalCaptcha.hide();
+                    bootstrapToastr({
+                        title: "Result",
+                        message: json.message,
+                        duraction: 5000
+                    });
+                    if (!json.success) {
+                        tk.focus();
+                        setTimeout(window.retry, 1000);
+                    }
+                }).catch(function (err) {
+                    modalCaptcha.hide();
+                    bootstrapToastr({
+                        title: "Error",
+                        message: err.message,
+                        duraction: 5000
+                    });
+                    tk.focus();
+                    setTimeout(window.retry, 1000);
+                }).finally(function () {
+                    $('#btn-submit').removeAttribute('disabled')
+                    $('#btn-submit').innerHTML = 'Submit';
+                    tk.focus();
+                });
+            }, 500);
+        }, function () {
+            $('#btn-submit').removeAttribute('disabled')
+            $('#btn-submit').innerHTML = 'Submit';
+            tk.focus();
+        });
+
+        return false;
+    }
+
+    window.copy = function (text) {
+        var input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        bootstrapToastr({
+            title: "Tips",
+            message: 'Copied to clipboard.',
+            duraction: 5000
+        });
+        tk.focus();
+        return false;
+    };
+</script>

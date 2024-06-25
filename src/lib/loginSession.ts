@@ -14,15 +14,10 @@ const loginSession = async (request, db, user_id, type: string | 'json') => {
   const expires_at = (new Date((new Date).getTime() + 86400 * 31 * 1000)).getTime();
   const session = await db.prepare(`SELECT * FROM sessions WHERE id=?`).bind(session_id).first();
   if (!session) {
-    const { count, duration } = <{ count: number, duration: number, }> (await db.prepare(`INSERT INTO sessions (id, user_id, expires_at) VALUES (?1, ?2, ?3)`).bind(session_id, user_id, expires_at).run()).meta;
-    if (!duration) {
-      message = 'Session insert failed';
-    }
+    await db.prepare(`INSERT INTO sessions (id, user_id, expires_at) VALUES (?1, ?2, ?3)`).bind(session_id, user_id, expires_at).run();
+
   } else {
-    const { count, duration } = <{ count: number, duration: number, }> (await db.prepare(`UPDATE sessions SET user_id=?2, expires_at=?3 WHERE id=?1`).bind(session_id, user_id, expires_at).run()).meta;
-    if (!duration) {
-      message = 'Session update failed';
-    }
+    await db.prepare(`UPDATE sessions SET user_id=?2, expires_at=?3 WHERE id=?1`).bind(session_id, user_id, expires_at).run();
   }
 
   if (message) {

@@ -1,0 +1,83 @@
+%%HEADER%%
+<form method="POST" action="/auth/reset" onsubmit="return window.doReset(this)">
+    <input type="hidden" name="g-recaptcha-response" id="reset_form_hidden_cf_response" value="">
+
+    <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
+    <h1 class="h3 mb-3 fw-normal">Reset MFA</h1>
+
+    <div class="form-floating">
+        <input type="email" name="email" class="form-control" id="floatingInput" placeholder="name@example.com" autocomplete="email" required>
+        <label for="floatingInput">Email address</label>
+    </div>
+
+    <button class="btn btn-primary btn-lg py-2 rounded-top-0 w-100" type="submit" id="btnSubmit">Send Reset Email</button>
+    <p class="mt-5 mb-3 text-body-secondary">© 2024</p>
+</form>
+%%FOOTER%%
+%%RECAPTCHA%%
+<script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/bootstrap-toaster.js"></script>
+<script>
+    window.restore = function (modalCaptcha) {
+        $('#btnSubmit').innerHTML = 'Send Reset Email';
+        $('#btnSubmit').removeAttribute('disabled');
+        modalCaptcha.hide();
+    };
+    window.doReset = function (form) {
+        $('#btnSubmit').innerHTML = 'Pending...';
+        $('#btnSubmit').setAttribute('disabled', true);
+
+        window.captchaChallenge('reset', function (challengeResponse, modalCaptcha) {
+            $('#reset_form_hidden_cf_response').value = challengeResponse;
+            $('#btnSubmit').innerHTML = 'Pending...';
+            $('#btnSubmit').setAttribute('disabled', true);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: form.elements['email'].value,
+                    'g-recaptcha-response': form.elements['g-recaptcha-response'].value,
+                }),
+            }).then(function (res) {
+                return res.json()
+            }).then(function (json) {
+                modalCaptcha.hide();
+                if (json.success) {
+                    bootstrapToastr({
+                        title: "Success!",
+                        message: json.message,
+                        duraction: 5000
+                    });
+                } else {
+                    var tk = $('#floatingInput');
+                    var popover = new bootstrap.Popover(tk, {
+                        toggle: "popover",
+                        title: "Error",
+                        content: json.message,
+                        trigger: "custom",
+                        placement: window.innerWidth < 850 ? 'top' : "right",
+                        html: true,
+                    });
+                    setTimeout(function () {
+                        if (json.message == 'MFA code is invalid') {
+                            $('#floatingInput').value = '';
+                        }
+                        $('#floatingInput').focus();
+                        popover.show();
+                    }, 300);
+                }
+                window.restore(modalCaptcha);
+            }).catch(function () {
+                window.restore(modalCaptcha);
+            });
+        }, function () {
+            window.restore(modalCaptcha);
+        });
+        return false;
+    };
+
+    $('#floatingInput').focus();
+</script>

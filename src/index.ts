@@ -29,11 +29,15 @@ import dashboardBannerTpl from 'template/dashboard/common/banner.html';
 // @ts-ignore
 import indexTpl from 'template/index.html';
 // @ts-ignore
-import loginTpl from 'template/login.html';
+import authLoginTpl from 'template/auth/login.html';
 // @ts-ignore
-import loginMfaTpl from 'template/login-mfa.html';
+import authLoginMfaTpl from 'template/auth/login-mfa.html';
 // @ts-ignore
-import registerTpl from 'template/register.html';
+import authRegisterTpl from 'template/auth/register.html';
+// @ts-ignore
+import authResetTpl from 'template/auth/reset.html';
+// @ts-ignore
+import authMfaRecoveryTpl from 'template/auth/mfa-recovery.html';
 // @ts-ignore
 import whoisLookupTpl from 'template/whois-lookup.html';
 // @ts-ignore
@@ -50,7 +54,8 @@ import resourcesRegistrarsTpl from 'template/resources/registrars.html';
 import supportReportAbuseTpl from 'template/support/report-abuse.html';
 // @ts-ignore
 import emailActivationTpl from 'template/email/activation.html';
-
+// @ts-ignore
+import emailMfaRecoveryTpl from 'template/email/mfa-recovery.html';
 // @ts-ignore
 import dashboardTpl from 'template/dashboard/index.html';
 // @ts-ignore
@@ -222,11 +227,11 @@ router.get('/support/report-abuse', async (request: Request, env: Env, ctx: Exec
 
 // @TODO: report abuse process
 
-router.get('/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
-  return new Response(loginTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl), { headers, });
+router.get('/auth/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return new Response(authLoginTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl), { headers, });
 });
 
-router.post('/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.post('/auth/login', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
   const user = <User>await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
     .bind(post.email)
@@ -235,22 +240,22 @@ router.post('/login', async (request: Request, env: Env, ctx: ExecutionContext) 
   if (!user) {
     // not registered
     const secret = generateSecret();
-    var tpl = registerTpl;
-    return Response.redirect(`${(new URL(request.url)).origin}/register?email=${encodeURIComponent(post.email)}`);
+    var tpl = authRegisterTpl;
+    return Response.redirect(`${(new URL(request.url)).origin}/auth/register?email=${encodeURIComponent(post.email)}`);
   }
 
-  return Response.redirect(`${(new URL(request.url)).origin}/login/auth-factor?email=${encodeURIComponent(post.email)}`)
+  return Response.redirect(`${(new URL(request.url)).origin}/auth/login/auth-factor?email=${encodeURIComponent(post.email)}`)
 });
 
-router.get('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/auth/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestQuery(request);
   if (!get.email) {
-    return Response.redirect(`${(new URL(request.url)).origin}/login`);
+    return Response.redirect(`${(new URL(request.url)).origin}/auth/login`);
   }
-  return new Response(loginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+  return new Response(authLoginMfaTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
-router.post('/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.post('/auth/login/auth-factor', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
 
   try {
@@ -313,16 +318,16 @@ router.post('/login/auth-factor', async (request: Request, env: Env, ctx: Execut
   return await loginSession(request, env.DB, user_id, 'json');
 });
 
-router.get('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/auth/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const get = await readRequestQuery(request);
   if (!get.email) {
-    return Response.redirect(`${(new URL(request.url)).origin}/login`);
+    return Response.redirect(`${(new URL(request.url)).origin}/auth/login`);
   }
   const secret = generateSecret();
-  return new Response(registerTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+  return new Response(authRegisterTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
 });
 
-router.post('/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.post('/auth/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const post = <{ email: string; token: string; secret: string; }>await readRequestBody(request);
 
   try {
@@ -390,7 +395,7 @@ router.post('/register', async (request: Request, env: Env, ctx: ExecutionContex
 
   const encryptedDataHex = bufferToHex(encryptedData);
   const ivHex = bufferToHex(iv);
-  const activation_link = `${env.APP_URL}/register/activation?data=${encryptedDataHex}&sign=${ivHex}`;
+  const activation_link = `${env.APP_URL}/auth/register/activation?data=${encryptedDataHex}&sign=${ivHex}`;
 
   try {
     await sendmail(
@@ -412,7 +417,7 @@ router.post('/register', async (request: Request, env: Env, ctx: ExecutionContex
   }
 });
 
-router.get('/register/activation', async (request: Request, env: Env, ctx: ExecutionContext) => {
+router.get('/auth/register/activation', async (request: Request, env: Env, ctx: ExecutionContext) => {
   const encryptData = new URL(request.url).searchParams.get('data');
   const ivData = new URL(request.url).searchParams.get('sign');
   if (!encryptData || !ivData) {
@@ -445,6 +450,157 @@ router.get('/register/activation', async (request: Request, env: Env, ctx: Execu
   }
 
   return await loginSession(request, env.DB, user_id, 'Your account has been activated successfully! Redirecting...');
+});
+
+router.get('/auth/reset', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const get = await readRequestQuery(request);
+
+  return new Response(authResetTpl.replace(/\%\%HEADER\%\%/g, authHeaderTpl).replace(/\%\%FOOTER\%\%/g, authFooterTpl).replace(/\%\%EMAIL\%\%/g, get.email || ``).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+});
+
+router.post('/auth/reset', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  const post = await readRequestBody(request);
+
+  const user = <User>await env.DB.prepare(`SELECT * FROM users WHERE email=?`)
+    .bind(post.email)
+    .first();
+
+  if (!user) {
+    return Response.json({
+      success: false,
+      message: `An user with email ${post.email} doesn't exists.`,
+    });
+  }
+
+  const reset_id = uuid();
+  await env.DB.prepare(`INSERT INTO user_resets (id, user_id, used_at, created_at) VALUES (?1, ?2, ?3, ?4)`).bind(reset_id, user.id, null, (new Date).getTime()).run();
+
+  const expiration = new Date().getTime() + 86400 * 1000;
+
+  const { iv, data: encryptedData } = await encryptData(env.AES_KEY, JSON.stringify({
+    sub: reset_id,
+    exp: expiration,
+    iat: new Date().getTime(),
+  }));
+  const encryptedDataHex = bufferToHex(encryptedData);
+  const ivHex = bufferToHex(iv);
+  const reset_link = `${env.APP_URL}/auth/recovery-mfa?data=${encryptedDataHex}&sign=${ivHex}`;
+  const message = emailMfaRecoveryTpl.replace(/\%\%EMAIL\%\%/g, post.email).replace(/\%\%RESET_LINK\%\%/g, reset_link);
+
+  await sendmail(user.email, 'Recovery your Com.mp Registry account\'s MFA', message, env);
+
+  return Response.json({
+    success: true,
+    message: `Please continue reset process followiing the instruction which sent to your email ${post.email}.<br/>If unable to receive, try to whitelist our email addresses: <br/>no-reply@registry.com.mp,  <br/>no-reply@nic.com.mp,  <br/>no-reply@support.com.mp`,
+  });
+});
+
+router.get('/auth/recovery-mfa', async(request: Request, env: Env, ctx: ExecutionContext) => {
+  const encryptData = new URL(request.url).searchParams.get('data');
+  const ivData = new URL(request.url).searchParams.get('sign');
+  if (!encryptData || !ivData) {
+    return new Response(`Invalid activation link`, { headers, });
+  }
+  let expiration: number;
+  let reset_id: string;
+
+  try {
+    const decrypted = JSON.parse(await decryptData(env.AES_KEY, hexToBuffer(encryptData), hexToBuffer(ivData)));
+    reset_id = decrypted.sub;
+    expiration = decrypted.exp;
+  } catch (err) {
+    return new Response(`Invalid activation link: ${err}`, { headers, });
+  }
+
+  const user_reset = await env.DB.prepare(`SELECT * FROM user_resets WHERE id=?`).bind(reset_id).first();
+  if (!user_reset) {
+    return new Response('User_resets not found', { headers, });
+  }
+
+  if (expiration < (new Date).getTime() || user_reset.used_at) {
+    return new Response(`Link expired`, { headers, });
+  }
+
+  const user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(user_reset.user_id).first();
+  if (!user) {
+    return new Response('User not found', { headers, });
+  }
+
+  const email = user.email;
+  const secret = generateSecret();
+  const tpl = authMfaRecoveryTpl;
+  return new Response(tpl.replace(/\%\%HEADER\%\%/, authHeaderTpl).replace(/\%\%FOOTER\%\%/, authFooterTpl).replace(/\%\%EMAIL\%\%/g, email).replace(/\%\%SECRET\%\%/g, secret).replace(/\%\%RECAPTCHA\%\%/g, recaptchaTpl.replace(/\%\%SITE_KEY\%\%/g, env.RECAPTCHA_SITE_KEY)), { headers, });
+});
+
+router.post('/auth/recovery-mfa', async(request: Request, env: Env, ctx: ExecutionContext) => {
+  const {secret, token} = await readRequestBody(request);
+
+  const encryptData = new URL(request.url).searchParams.get('data');
+  const ivData = new URL(request.url).searchParams.get('sign');
+  if (!encryptData || !ivData) {
+    return Response.json({
+      success: false,
+      message: `Invalid activation link`,
+    });
+  }
+  let expiration: number;
+  let reset_id: string;
+
+  try {
+    const decrypted = JSON.parse(await decryptData(env.AES_KEY, hexToBuffer(encryptData), hexToBuffer(ivData)));
+    reset_id = decrypted.sub;
+    expiration = decrypted.exp;
+  } catch (err) {
+    return Response.json({
+      success: false,
+      message: `Invalid activation link: ${err}`,
+    });
+  }
+
+  const user_reset = await env.DB.prepare(`SELECT * FROM user_resets WHERE id=?`).bind(reset_id).first();
+  if (!user_reset) {
+    return Response.json({
+      success: false,
+      message: 'User_resets not found',
+    });
+  }
+
+  if (expiration < (new Date).getTime() || user_reset.used_at) {
+    return Response.json({
+      success: false,
+      message: `Link expired`,
+    });
+  }
+
+  const user = await env.DB.prepare(`SELECT * FROM users WHERE id=?`).bind(user_reset.user_id).first();
+  if (!user) {
+    return Response.json({
+      success: false,
+      message: 'User not found',
+    });
+  }
+
+  try {
+    if (!(await validateTotp(token, secret))) {
+      return Response.json({
+        success: false,
+        message: 'MFA code is invalid, try to calibrate the OTP device sys time?',
+      });
+    }
+  } catch (err) {
+    return Response.json({
+      success: false,
+      message: `MFA code is invalid, try to calibrate the OTP device sys time?\n${err}`,
+    });
+  }
+
+  await env.DB.prepare(`UPDATE user_resets SET used_at=?2 WHERE id=?1`).bind(reset_id, (new Date).getTime()).run();
+  await env.DB.prepare(`UPDATE users SET mfa_secret=?2, updated_at=?3 WHERE id=?1`).bind(user.id, secret, (new Date).getTime()).run();
+
+  return Response.json({
+    success: false,
+    message: 'MFA recovery successfully',
+  });
 });
 
 router.any('/deposit-callback/*', async (request: Request, env: Env, ctx: ExecutionContext) => {
@@ -489,7 +645,7 @@ router.get('/dashboard', async (request: Request, env: Env, ctx: ExecutionContex
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -518,7 +674,7 @@ router.get('/dashboard/domains', async (request: Request, env: Env, ctx: Executi
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -544,7 +700,7 @@ router.post('/dashboard/domains', async (request: Request, env: Env, ctx: Execut
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -600,7 +756,7 @@ router.get('/dashboard/balance', async (request: Request, env: Env, ctx: Executi
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -625,7 +781,7 @@ router.post('/dashboard/balance', async (request: Request, env: Env, ctx: Execut
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -704,7 +860,7 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -745,7 +901,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -909,7 +1065,7 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
@@ -1065,7 +1221,7 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
   if (!user) {
     return new Response(
       `
-          <script>location.href = '/login';</script>
+          <script>location.href = '/auth/login';</script>
       `, {
       headers: {
         'Content-type': 'text/html; charset=utf-8',

@@ -111,7 +111,11 @@
             display: block !important;
         }
     </style>
-
+    <script>
+        $ = function (a) {
+            return document.querySelector(a);
+        };
+    </script>
 </head>
 
 <body style="background-image: none;">
@@ -212,7 +216,7 @@
                         if (document.cookie.indexOf('session_id=') > -1) {
                             document.writeln('<a class="me-3 py-2 link-body-emphasis text-decoration-none" href="/dashboard">Dashboard</a>');
                         } else {
-                            document.writeln('<a class="me-3 py-2 link-body-emphasis text-decoration-none" href="/login">Login / Register</a>');
+                            document.writeln('<a class="me-3 py-2 link-body-emphasis text-decoration-none" href="/auth/login">Login / Register</a>');
                         }
                     </script>
                 </nav>

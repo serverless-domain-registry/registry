@@ -1,5 +1,5 @@
 %%HEADER%%
-<form method="POST" action="/login" onsubmit="window.doLogin()">
+<form method="POST" action="/auth/login" onsubmit="window.doLogin()">
     <input type="hidden" name="action" value="check">
     <span class="d-block hurricane-regular mb-4" style="font-size: 32px; font-weight: bold;">Com.Mp</span>
     <h1 class="h3 mb-3 fw-normal">Login / Register</h1>
@@ -16,9 +16,9 @@
 
 <script>
     window.doLogin = function () {
-        document.querySelector('#btnSubmit').innerHTML = 'Pending...';
-        document.querySelector('#btnSubmit').setAttribute('disabled', true);
+        $('#btnSubmit').innerHTML = 'Pending...';
+        $('#btnSubmit').setAttribute('disabled', true);
         return true;
     };
-    document.querySelector('#floatingInput').focus();
+    $('#floatingInput').focus();
 </script>

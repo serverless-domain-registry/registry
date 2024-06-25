@@ -45,13 +45,10 @@ DNSPOD_API_TOKEN=""
 DNSPOD_DOMAIN_ID=""
 EPUSDT_API_KEY=""
 EPUSDT_API_URL=""
-RECAPTCHA_SECRET_KEY="get it at www.google.com/recaptcha"
-RECAPTCHA_SITE_KEY=""
+RECAPTCHA_SITE_KEY="get it at www.google.com/recaptcha"
+RECAPTCHA_SECRET_KEY=""
 BREVO_PREFER="auto"
-BREVO=[
-    {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"},
-    {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"}
-]
+BREVO=[ {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"}, {"apiKey": "get it at BREVO.com", "senderName": "No reply", "senderAddress": "**"} ]
 ```
 
 ### Deploy

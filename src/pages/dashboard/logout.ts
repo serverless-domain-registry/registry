@@ -4,7 +4,7 @@ export default async (request: Request, db: D1Database, session_id: string | fal
   }
 
   return new Response(
-    `<script>location.href = '/login';</script>`,
+    `<script>location.href = '/auth/login';</script>`,
     {
       headers: {
         'Content-type': 'text/html; charset=utf-8',
