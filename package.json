@@ -6,7 +6,9 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev",
     "start": "wrangler dev",
-    "db-backup": "wrangler d1 export registry --remote --output=./backup.sql"
+    "db-backup-remote": "wrangler d1 export registry --remote --output=./backup.sql",
+    "db-import-remote": "wrangler d1 execute --remote DB --file=backup.sql",
+    "db-import-local": "wrangler d1 execute --local DB --file=backup.sql"
   },
   "dependencies": {},
   "devDependencies": {
