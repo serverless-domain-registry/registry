@@ -24,7 +24,8 @@
 
 %%RECAPTCHA%%
 <script>
-    $('#mfaField').focus();
+    var tk = $('#mfaField');
+    tk.focus();
 
     window.doLogin = function (form) {
         $('#btnSubmit').innerHTML = 'Pending...';
@@ -55,7 +56,6 @@
                     return;
                 }
 
-                $('#mfaField');
                 var popover = new bootstrap.Popover(tk, {
                     toggle: "popover",
                     title: "Error",
@@ -66,9 +66,9 @@
                 });
                 setTimeout(function () {
                     if (json.message == 'MFA code is invalid') {
-                        $('#mfaField').value = '';
+                        tk.value = '';
                     }
-                    $('#mfaField').focus();
+                    tk.focus();
                     popover.show();
                 }, 300);
 
