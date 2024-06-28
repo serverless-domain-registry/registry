@@ -933,7 +933,15 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
 
   const post = <{ domains: string[]; dnsServers: string[] }>await readRequestBody(request);
   let domains = post.domains.map(domain => domain.toLowerCase());
-  const dnsServers = post.dnsServers.map(domain => domain.toLowerCase());
+  const dnsServers = post.dnsServers.map((dnsServer) => {
+    if (dnsServer.replace(/\.$/, '').toLowerCase().endsWith('.cloudflare.com')) {
+      return Response.json({
+        success: false,
+        message: `Sorry. Cloudflare doesn't accept our com.mp domain, please try another DNS providers.`,
+      });
+    }
+    return dnsServer.toLowerCase()
+  });
 
   if (domains.length > 1) {
     if (user.credit < 0.99 * (domains.length - 1)) {
@@ -1239,7 +1247,15 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
 
   const post = <{ domain: string; dns_servers?: string[]; }>await readRequestBody(request);
   const domain = post.domain;
-  const dnsServers = post.dns_servers && post.dns_servers.length ? post.dns_servers.map(dnsServer => dnsServer.toLowerCase()) : [];
+  const dnsServers = post.dns_servers && post.dns_servers.length ? post.dns_servers.map(dnsServer => {
+    if (dnsServer.replace(/\.$/, '').toLowerCase().endsWith('.cloudflare.com')) {
+      return Response.json({
+        success: false,
+        message: `Sorry. Cloudflare doesn't accept our com.mp domain, please try another DNS providers.`,
+      });
+    }
+    return dnsServer.toLowerCase();
+  }) : [];
 
   if (!domain || !dnsServers) {
     return Response.json({
