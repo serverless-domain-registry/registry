@@ -33,7 +33,7 @@ export async function createNsRecord(env: Env, subdomain: string, dnsservers: st
 
 export async function getNsRecord(env: Env, subdomain: string): Promise<any[]> {
     const url = `${apiBase}/Record.List`
-    return (await fetch(url, {
+    return await fetch(url, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -47,7 +47,7 @@ export async function getNsRecord(env: Env, subdomain: string): Promise<any[]> {
             `length=500`,
         ].join(`&`),
     })
-    .then(res => <{records: any[]}> <unknown> res.json())).records;
+    .then(res => <{records: any[]}> <unknown> res.json()).then(json => json.records);
 };
 
 
@@ -57,6 +57,9 @@ export async function deleteNsRecord(env: Env, subdomain: string) {
     }
 
     const records = await getNsRecord(env, subdomain);
+    if (!records || typeof records.length === 'undefined') {
+        return true;
+    }
     records.forEach(async (record: any) => {
         const url = `${apiBase}/Record.Remove`;
         const json = await fetch(url, {
