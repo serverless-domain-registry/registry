@@ -1,51 +1,70 @@
 %%HEADER%%
         <div class="my-5 pt-5 px-4">
             <h1 class="display-4 fw-bold text-body-emphasis text-center swanky-and-moo-moo-regular">Report abuse</h1>
-            <p class="text-center text-secondary" style="font-family: serif;">If you see any malicious link or any abuse situation in &lt;anydomain&gt;.com.mp, please report to us. we will suspend the domain name after confirm the abuse</p>
+            <p class="text-center text-secondary" style="font-family: serif;">If you see any malicious link or any abuse situation in &lt;anydomain&gt;.com.mp, please fill this form, or send the abuse report email to report@registry.com.mp</p>
+            <p class="text-center text-secondary" style="font-family: serif;">We will suspend the domain name after confirm the abuse.</p>
         </div>
 
         <div class="col-lg-8 col-md-10 col-sm-12 offset-lg-2 offset-md-1 offset-sm-0 pb-4" id="content">
-            <form id="queryForm" method="POST" action="/support/report-abuse" onsubmit="return window.checkLink(this);">
-                <input type="hidden" name="action" value="verifyuri">
+            <!-- <form id="queryForm" method="POST" action="/support/report-abuse" onsubmit="return window.checkLink(this);">
                 <fieldset>
                     <div class="input-group mb-3">
-                        <input type="url" id="urlField" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links" required autofocus>
+                        <input type="url" id="urlField" name="url" class="form-control form-control-lg" placeholder="e.g: https://malicious.com.mp/links">
                         <button id="btnCheck" type="submit" class="btn btn-lg btn-primary swanky-and-moo-moo-regular">Next</button>
                         <div class="valid-feedback">
                             The link is valid.
                         </div>
                         <div class="invalid-feedback">
-                            The link is invalid. Or we're not its jurisdiction office.
+                            The link is invalid. Or we're not its jurisdiction registry.
                         </div>
+                    </div>
+                    <div class="input-group mb-3 d-none">
+                        <input type="text" id="reason" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links">
+                    </div>
+                    <div class="input-group mb-3 d-none">
+                        <input type="text" id="a" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links">
+                    </div>
+                    <div class="input-group mb-3 d-none">
+                        <input type="text" id="b" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links">
+                    </div>
+                    <div class="input-group mb-3 d-none">
+                        <input type="text" id="c" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links">
+                    </div>
+                    <div class="input-group mb-3 d-none">
+                        <input type="text" id="d" name="url" class="form-control form-control-lg" placeholder="https://malicious.com.mp/links">
                     </div>
                     <span id="errTip" class="m-2"></span>
                 </fieldset>
                 <input type="hidden" name="g-recaptcha-response" id="report_abuse_form_hidden_cf_response" value="">
-            </form>
+            </form> -->
 
-            <iframe src=""></iframe>
+            <div style="overflow: hidden;">
+                <iframe style="margin-top: -180px; margin-bottom: -150px; margin-right: -5px; padding-left: 5px; padding-right: 5px;" src="https://dashboard.feishu.cn/share/base/form/shrcnJ2GxXjbPNvHuDNNXLY5COh" width="652" height="1082"></iframe>
+            </div>
         </div>
 %%FOOTER%%
 
 %%RECAPTCHA%%
 
-<script>
+<!-- <script>
 window.checkLink = function (form) {
-    form.elements.url.className = 'form-control form-control-lg';
-    var link = form.elements.url.value;
-    if (!link.startsWith('http://') && !link.startsWith('https://')) {
-        link = 'http://' + link;
-    }
-    var urlParse = new URL(link);
-    if (['registry.com.mp', 'www.registry.com.mp'].includes(urlParse.hostname.toLowerCase()) || !urlParse.hostname.toLowerCase().endsWith('.com.mp')) {
-        form.elements.url.classList.add('is-invalid');
-        return !1;
-    } else {
-        form.elements.url.classList.add('is-valid');
-    }
+    // form.elements.url.className = 'form-control form-control-lg';
+    // var link = form.elements.url.value;
+    // if (!link.startsWith('http://') && !link.startsWith('https://')) {
+    //     link = 'http://' + link;
+    // }
+    // var urlParse = new URL(link);
+    // if (['registry.com.mp', 'www.registry.com.mp'].includes(urlParse.hostname.toLowerCase()) || !urlParse.hostname.toLowerCase().endsWith('.com.mp')) {
+    //     form.elements.url.classList.add('is-invalid');
+    //     return !1;
+    // } else {
+    //     form.elements.url.classList.add('is-valid');
+    // }
 
-    
-    document.querySelector('#content').innerHTML = '<iframe src="https://docs.google.com/forms/d/e/1FAIpQLScqaOhUEqGe8nOeprs5uYtHp14lRcJYyTSUQjlfnxDXA1PEWQ/viewform?embedded=true&entry.884058544=' + encodeURIComponent(link) + '" style="width: 100%; height: 1000px; border: 0;"></iframe>'
+    $('#btnCheck').remove();
+    $('#urlField+.valid-feedback').remove();
+    $('#urlField+.invalid-feedback').remove();
+    document.querySelectorAll('.input-group.d-none').forEach(e => e.className = e.className.replace(/ d-none/, ''));
     return !1;
 };
-</script>
+</script> -->
