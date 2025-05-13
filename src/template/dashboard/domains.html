@@ -23,6 +23,9 @@
             font-weight: 400;
             font-style: normal;
         }
+        body {
+            overflow-y: visible !important;
+        }
     </style>
 
     <style>
@@ -398,16 +401,6 @@
         </div>
     </main>
 
-    <div class="modal fade" id="modalRefreshing" tabindex="-1" aria-labelledby="modalRefreshingLabel" aria-modal="true" role="dialog">
-        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 235px; margin: auto;">
-            <div class="modal-content" style="outline: 9999px solid rgba(0, 0, 0, 0.5); border: 0;">
-                <div class="modal-body text-center">
-                    <span class="hurricane-regular" style="font-size: 20px;font-weight: bold;display: block;width: 80px;height: 30px;margin: -5px auto;">Com.Mp</span>
-                </div>
-            </div>
-        </div>
-    </div>      
-
     <div class="modal fade" id="modalRenew" tabindex="-1" aria-labelledby="modalRenewLabel" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 335px;">
           <div class="modal-content">
@@ -439,6 +432,33 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalFreeOneYear" tabindex="-1" aria-labelledby="modalFreeOneYearLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 535px;">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="modalFreeOneYearLabel">Grab Free 1 Year</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" tabindex="-1"></button>
+            </div>
+            <div class="modal-body">
+                <h5><small>Build a website using our domain name, and get 1 year for free!</small></h5>
+                <form onsubmit="return window.freeOneYearDomain(this);">
+                    <input type="hidden" name="g-recaptcha-response" id="FreeOneYear_form_hidden_cf_response">
+                    <div class="form-floating mb-4">
+                        <input type="text" class="form-control form-control-lg" name="domain" id="modalFreeOneYearDomainInput" placeholder="Domain" readonly>
+                        <label for="domainInput">Domain</label>
+                    </div>
+                    <div class="form-floating mb-4">
+                        <select class="form-control form-control-lg" name="url" id="modalFreeOneYearDomainUrlSelect" placeholder="Select which URL to submit for verification">
+                        </select>
+                        <label for="modalFreeOneYearDomainUrlSelect">Select which URL to submit for verification</label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100" id="modalFreeOneYearDomain-btn-submit">Check</button>
+                </form>
+            </div>
+          </div>
+        </div>
+    </div>
+
     <div class="modal fade" id="modalUpdateDns" tabindex="-1" aria-labelledby="modalUpdateDnsLabel" aria-modal="true" role="dialog">
         <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto">
           <div class="modal-content">
@@ -464,6 +484,16 @@
         </div>
     </div>
 
+    <div class="modal fade" id="modalRefreshing" tabindex="-1" aria-labelledby="modalRefreshingLabel" aria-modal="true" role="dialog">
+        <div class="modal-dialog modal-dialog-sm modal-dialog-centered m-auto" style="width: 235px; margin: auto;">
+            <div class="modal-content" style="outline: 9999px solid rgba(0, 0, 0, 0.5); border: 0;">
+                <div class="modal-body text-center">
+                    <span class="hurricane-regular" style="font-size: 20px;font-weight: bold;display: block;width: 80px;height: 30px;margin: -5px auto;">Com.Mp</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://getbootstrap.com/docs/5.3/examples/offcanvas-navbar/offcanvas-navbar.js"></script>
     <script src="https://pub-48a8aae8385f40509fc8734a414ccf4c.r2.dev/showModal.js"></script>
@@ -478,6 +508,11 @@
         window.modalRenew = new bootstrap.Modal(window.modalRenewDom, {})
         window.modalRenewDom.addEventListener('shown.bs.modal', function (event) {
             $('#periodInput').focus();
+        });
+        window.modalFreeOneYearDom = $('#modalFreeOneYear');
+        window.modalFreeOneYear = new bootstrap.Modal(window.modalFreeOneYearDom, {})
+        window.modalFreeOneYearDom.addEventListener('shown.bs.modal', function (event) {
+            $('#haswwwInput').focus();
         });
         window.modalUpdateDnsDom = $('#modalUpdateDns');
         window.modalUpdateDns = new bootstrap.Modal(window.modalUpdateDnsDom, {})
@@ -496,6 +531,9 @@
 
         window.loadPage = function (page, page_size, search, sort, order) {
             window.modalRefreshing.show();
+            setTimeout(() => {
+                window.modalRefreshing.hide();
+            }, 5000);
             fetch(url, {
                 method: 'POST',
                 headers: {
@@ -540,6 +578,8 @@
                                     <li><a class="dropdown-item" href="#" onclick="window.changeDomainDnsServer('${item.domain}', '${item.ns_servers.join(',')}');">NS Server</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item" href="#" onclick="window.renew('${item.domain}', '${item.type}')">Renewal</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#" onclick="window.getFreeOneYearShow('${item.domain}', '${item.type}')">Get 1 Year!</a></li>
                                 </ul>
                             </div>
                         </div>
@@ -696,6 +736,68 @@
             return false;
         };
 
+        window.getFreeOneYearShow = function (domain, type) {
+            window.modalFreeOneYear.show();
+            document.querySelector('#modalFreeOneYearDomainInput').value = domain;
+            document.querySelector('#modalFreeOneYearDomainUrlSelect').innerHTML = '';
+            const urls = [
+                'http://' + domain,
+                'http://www.' + domain,
+                'https://' + domain,
+                'https://www.' + domain,
+            ];
+            urls.forEach(e => {
+                let option = document.createElement('option');
+                option.text = option.value = e;
+                document.querySelector('#modalFreeOneYearDomainUrlSelect').appendChild(option);
+            });
+        };
+
+        window.freeOneYearDomain = function (form) {
+            let button = document.querySelector('#modalFreeOneYearDomain-btn-submit');
+            button.setAttribute('disabled', 'disabled');
+            button.innerHTML = 'Pending...';
+            window.modalRefreshing.show();
+            setTimeout(() => {
+                window.modalRefreshing.hide();
+            }, 10000);
+            fetch('/dashboard/domains/grab-one-year-free', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    domain: form.elements['domain'].value,
+                    url: form.elements['url'].value,
+                }),
+            })
+            .then(function (res) { return res.json()})
+            .then(function (json) {
+                if (!json.success) {
+                    return bootstrapToastr({
+                        title: 'Fail!',
+                        message: json.message,
+                        duraction: 5000
+                    });
+                }
+
+                return bootstrapToastr({
+                    title: 'Success',
+                    message: json.message,
+                    duraction: 5000
+                });
+
+                window.loadPage(window.page, window.page_size, window.search, window.sort, window.order);
+                window.modalUpdateDns.hide();
+            })
+            .finally(function () {
+                button.removeAttribute('disabled');
+                button.innerHTML = 'Check';
+                window.modalRefreshing.hide();
+            });
+            return false;
+        };
+
         window.changeDomainDnsServer = function (domain, nsServersComma) {
             document.querySelector('#updateDnsDialog-domainInput').value = domain;
             document.querySelector('#updateDnsDialog-nsServersInput').value = nsServersComma.trim().split(',').filter(Boolean).map(function (item) { return item.trim(); }).join(`\n`);
@@ -703,7 +805,8 @@
         };
 
         window.changeDomainDnsFormSubmit = function (form) {
-            document.querySelector('#btn-dns-submit').innerHTML = 'Proceeding...';
+            let button = document.querySelector('#btn-dns-submit');
+            button.innerHTML = 'Proceeding...';
             fetch('/dashboard/dns-servers', {
                 method: 'POST',
                 headers: {
@@ -734,8 +837,8 @@
                 window.modalUpdateDns.hide();
             })
             .finally(function () {
-                document.querySelector('#btn-dns-submit').innerHTML = 'Submit';
-                document.querySelector('#btn-dns-submit').removeAttribute('disabled');
+                button.innerHTML = 'Submit';
+                button.removeAttribute('disabled');
             });
             return false;
         };

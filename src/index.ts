@@ -944,8 +944,8 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
     return dnsServer.toLowerCase()
   });
 
-  if (domains.length > 1) {
-    if (user.credit < 0.99 * (domains.length - 1)) {
+  if (domains.length > maxFreeDomainNumber) {
+    if (user.credit < 0.99 * (domains.length - maxFreeDomainNumber)) {
       return Response.json({
         success: false,
         message: `InsufficientBalance.`
@@ -1061,7 +1061,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
       });
     }
 
-    if (userRegistered > 0) {
+    if (userRegistered > maxFreeDomainNumber) {
       await env.DB.prepare(`UPDATE users SET credit=credit-0.99 WHERE id=?`).bind(user.id).run();
     }
     userRegistered++;
@@ -1308,6 +1308,87 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
     success: true,
     message: `Update DNS servers of ${domain} success`,
   });
+});
+
+router.post('/dashboard/domains/grab-one-year-free', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  try {
+    const user = await get_user(env, get_session_id(request));
+    if (!user) {
+      return new Response(
+        `
+            <script>location.href = '/auth/login';</script>
+        `, {
+        headers: {
+          'Content-type': 'text/html; charset=utf-8',
+          'Set-cookie': 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;',
+        },
+      }
+      );
+    }
+
+    const post = <{ domain: string; url: string }>await readRequestBody(request);
+    const domain = post.domain;
+    const url = post.url;
+
+    if (!domain || !url) {
+      return Response.json({
+        success: false,
+        message: `domain and url parameter are both required`,
+      });
+    }
+
+    const domainInfo = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
+    if (!domainInfo) {
+      return Response.json({
+        success: false,
+        message: `Domain ${domain} not found`,
+      });
+    }
+    if (domainInfo.user_id !== user.id) {
+      return Response.json({
+        success: false,
+        message: `You don't have permission to update ${domain}`,
+      });
+    }
+    if (domainInfo.status != DomainStatus.OK) {
+      return Response.json({
+        success: false,
+        message: `Domain ${domain}'s status is not active`,
+      });
+    }
+    let hasInsert = false;
+    const has_grab = <Domain>await env.DB.prepare(`SELECT * FROM free_one_year WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
+    if (has_grab) {
+      return Response.json({
+        success: false,
+        message: `Domain ${domain} already grab before.`,
+      });
+    }
+
+    hasInsert = true;
+    await env.DB.prepare(`INSERT INTO free_one_year (domain, created_at) VALUES (?1, ?2)`).bind(domainInfo.domain, (new Date).getTime()).run();
+    const fetchRequest = await fetch(url);
+    const html = await fetchRequest.text();
+    if (!html || !html.length || html.includes(`error code:`)) {
+      if (hasInsert) {
+        await env.DB.prepare(`DELETE FROM free_one_year WHERE domain=?1 `).bind(domainInfo.domain).run();
+      }
+      throw new Error(`Fail to fetch ${url}${html&&html.length ? ` ${html}` : ''}`);
+    }
+
+    let expiration = (new Date(domainInfo.expires_at)).getTime() + 86400 * 1000 * 365;
+    const { count, duration } = (await env.DB.prepare(`UPDATE domains SET expires_at=?2, updated_at=?3 WHERE id=?1`).bind(domainInfo.id, expiration, (new Date).getTime()).run()).meta;
+
+    return Response.json({
+      success: true,
+      message: `Grab +1 year success for ${domain} with ${html}`,
+    });
+  } catch (err) {
+    return Response.json({
+      success: false,
+      message: `${err}`,
+    });
+  }
 });
 
 router.get('/**', async (request: Request) => {
