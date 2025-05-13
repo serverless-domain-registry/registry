@@ -67,7 +67,8 @@ import dashboardCreditTpl from 'template/dashboard/credit.html';
 // @ts-ignore
 import livechatTpl from 'template/dashboard/livechat.html';
 
-
+const maxFreeDomainNumber = 10;
+const maxFreeDomainDuration = 180;
 const headers = new Headers();
 headers.set('content-type', 'text/html');
 
@@ -1019,10 +1020,10 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
 
 
   let userRegistered = <number>await env.DB.prepare(`SELECT count(id) AS total FROM domains WHERE user_id=?1`).bind(user.id).first('total');
-  if (user.credit < 0.99 * (userRegistered + domains.length - 1)) {
+  if (user.credit < 0.99 * (userRegistered + domains.length - maxFreeDomainNumber)) {
     return Response.json({
       success: false,
-      message: `Your credit is ${user.credit} & consumed 1 free quota. <br/><br/>Try purchase credit to register more (USDT allowed).`
+      message: `Your credit is ${user.credit} & consumed ${maxFreeDomainNumber} free quota. <br/><br/>Try purchase credit to register more (USDT allowed).`
     })
   }
 
@@ -1047,7 +1048,7 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
     const created = await createNsRecord(env, domain.replace(/\.com\.mp$/, ''), dnsServers)
 
     const domain_id = uuid();
-    let expiration = (new Date).getTime() + 86400 * 1000 * 90;
+    let expiration = (new Date).getTime() + 86400 * 1000 * maxFreeDomainDuration;
     if (userRegistered != 0) {
       expiration = (new Date).getTime() + 86400 * 1000 * 365;
     }
@@ -1147,7 +1148,7 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
   }
 
   let price = 0;
-  if (period > 90) {
+  if (period > maxFreeDomainDuration) {
     price = 0.99 * domains.length * (period / 365);
     if (user.credit < price) {
       return Response.json({
@@ -1179,14 +1180,14 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     }
     let expiration = Number(domain.expires_at) + 86400 * 1000 * Number(period);
 
-    if (Number(period) == 90) {
-      expiration = (new Date).getTime() + 86400 * 1000 * 90;
+    if (Number(period) == maxFreeDomainDuration) {
+      expiration = (new Date).getTime() + 86400 * 1000 * maxFreeDomainDuration;
 
       if (expiration < domain.expires_at) {
         if (domains.length === 1) {
           return Response.json({
             success: false,
-            message: `Domain ${domain.domain}'s expiration is more than 90 days. no need to extend.`,
+            message: `Domain ${domain.domain}'s expiration is more than ${maxFreeDomainDuration} days. no need to extend.`,
           });
         }
         continue;
@@ -1217,10 +1218,10 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     // });
   };
 
-  if (Number(period) == 90) {
+  if (Number(period) == maxFreeDomainDuration) {
     return Response.json({
       success: true,
-      message: `Domain${domains.length > 1 ? `s` : ``}\'s expiration has been extended 90 days from today! <br/><ol>\n${domains.map(domain => `<li>${domain}</li>`).join(`<br/>\n`)}</ol>`,
+      message: `Domain${domains.length > 1 ? `s` : ``}\'s expiration has been extended ${maxFreeDomainDuration} days from today! <br/><ol>\n${domains.map(domain => `<li>${domain}</li>`).join(`<br/>\n`)}</ol>`,
     });
   }
 

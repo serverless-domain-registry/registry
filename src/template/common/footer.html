@@ -2,7 +2,7 @@
 <footer class="pt-4 my-md-5 pt-md-5 border-top">
     <div class="row">
         <div class="col-12 col-md">
-            <small class="d-block mb-3 text-body-secondary">© 2024 the <span class="hurricane-regular">Com.Mp REGISTRY</span>.</small>
+            <small class="d-block mb-3 text-body-secondary">© <span id="cur-year">2025</span> the <span class="hurricane-regular">Com.Mp REGISTRY</span>.</small>
             <small class="d-block mb-3 text-body-secondary">World's first Serverless &amp; Opensource Registry!</small>
             <small class="d-block mb-3 text-body-secondary">
                 <a href="https://github.com/serverless-domain-registry/registry">Github</a>
@@ -39,6 +39,9 @@
 </footer>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.querySelector('#cur-year').innerHTML = (new Date).getFullYear();
+</script>
 </body>
 
 </html>
