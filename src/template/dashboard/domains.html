@@ -495,7 +495,7 @@
         window.order = (new URL(url)).searchParams.get('order') || 'ASC';
 
         window.loadPage = function (page, page_size, search, sort, order) {
-            // window.modalRefreshing.show();
+            window.modalRefreshing.show();
             fetch(url, {
                 method: 'POST',
                 headers: {
