@@ -1180,7 +1180,7 @@ router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: E
     }
     let expiration = Number(domain.expires_at) + 86400 * 1000 * Number(period);
 
-    if (Number(period) >= maxFreeDomainDuration) {
+    if (Number(period) == maxFreeDomainDuration) {
       expiration = (new Date).getTime() + 86400 * 1000 * maxFreeDomainDuration;
 
       if (expiration < domain.expires_at) {
