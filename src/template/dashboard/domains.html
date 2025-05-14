@@ -418,7 +418,7 @@
                     </div>
                     <div class="form-floating mb-4">
                         <select class="form-control form-control-lg" name="period" id="periodInput" placeholder="Select renew period">
-                            <option value="90" id="option-90-days">90 Days - $0.00</option>
+                            <option value="180" id="option-180-days">180 Days - $0.00</option>
                             <option value="365" id="option-1-year">1 Year(365 Days) - $0.99</option>
                             <option value="730" id="option-2-years">2 Years(730 Days) - $1.98</option>
                             <option value="1095" id="option-3-years">3 Years(1095 Days) - $2.97</option>
@@ -669,11 +669,11 @@
         window.renew = function (domain, type) {
             document.querySelector('#domainInput').value = domain;
             if (type == 'paid') {
-                document.querySelector('#option-90-days').style.display = 'none';
+                document.querySelector('#option-180-days').style.display = 'none';
                 document.querySelector('#periodInput').value = '365';
             } else {
-                document.querySelector('#option-90-days').style.display = 'block';
-                document.querySelector('#periodInput').value = '90';
+                document.querySelector('#option-180-days').style.display = 'block';
+                document.querySelector('#periodInput').value = '180';
             }
             if (%%USER.CREDIT%% < 2.97) {
                 document.querySelector('#option-3-years').setAttribute('disabled', true);

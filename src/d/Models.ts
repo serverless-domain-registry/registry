@@ -23,8 +23,8 @@ export const DomainStatusPendingRenewal = 9;
 type ValueOf<T> = T[keyof T];
 type ArrayElement<ArrayType extends readonly unknown[]> = ArrayType extends readonly (infer ElementType)[] ? ElementType : never;
 
-export const DomainRenewPeriodOptions = [90, 365, 730, 1095];
-export type DomainRenewPeriodOptions = [90, 365, 730, 1095];
+export const DomainRenewPeriodOptions = [180, 365, 730, 1095];
+export type DomainRenewPeriodOptions = [180, 365, 730, 1095];
 export type DomainRenewPeriodOptionsType = ArrayElement<DomainRenewPeriodOptions>;
 
 export interface Domain {
