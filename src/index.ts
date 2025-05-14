@@ -1337,6 +1337,14 @@ router.post('/dashboard/domains/grab-one-year-free', async (request: Request, en
       });
     }
 
+    const parseURL = new URL(url);
+    if (![domain, 'www.' + domain,].includes(parseURL.hostname)) {
+      return Response.json({
+        success: false,
+        message: `url ${url} doesn't belong to ${domain}`,
+      });
+    }
+
     const domainInfo = <Domain>await env.DB.prepare(`SELECT * FROM domains WHERE domain=?1`).bind(domain.toLocaleLowerCase()).first();
     if (!domainInfo) {
       return Response.json({
