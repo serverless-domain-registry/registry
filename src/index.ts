@@ -333,6 +333,11 @@ router.get('/auth/register', async (request: Request, env: Env, ctx: ExecutionCo
 });
 
 router.post('/auth/register', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return Response.json({
+    success: false,
+    message: 'We have stopped user registration. <a href="https://github.com/publicsuffix/list/pull/2472#issuecomment-2882804743" target="_blank">see announcement</a>',
+  });
+
   const post = <{ email: string; token: string; secret: string;}>await readRequestBody(request);
   const ip = request.headers.get('cf-connecting-ip');
 
@@ -904,6 +909,10 @@ router.get('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exec
 });
 
 router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return Response.json({
+    success: false,
+    message: 'We have stopped domain registration. <a href="https://github.com/publicsuffix/list/pull/2472#issuecomment-2882804743" target="_blank">see announcement</a>',
+  });
   const user = await get_user(env, get_session_id(request));
   if (!user) {
     return new Response(
@@ -1076,6 +1085,11 @@ router.post('/dashboard/reg-domain', async (request: Request, env: Env, ctx: Exe
 });
 
 router.post('/dashboard/renew-domain', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return Response.json({
+    success: false,
+    message: 'We have stopped domain renewal. <a href="https://github.com/publicsuffix/list/pull/2472#issuecomment-2882804743" target="_blank">see announcement</a>',
+  });
+
   const user = await get_user(env, get_session_id(request));
   if (!user) {
     return new Response(
@@ -1311,6 +1325,11 @@ router.post('/dashboard/dns-servers', async (request: Request, env: Env, ctx: Ex
 });
 
 router.post('/dashboard/domains/grab-one-year-free', async (request: Request, env: Env, ctx: ExecutionContext) => {
+  return Response.json({
+    success: false,
+    message: 'We have stopped domain renewal. <a href="https://github.com/publicsuffix/list/pull/2472#issuecomment-2882804743" target="_blank">see announcement</a>',
+  });
+
   try {
     const user = await get_user(env, get_session_id(request));
     if (!user) {
